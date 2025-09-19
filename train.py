@@ -6,9 +6,10 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import roc_auc_score, log_loss
+from sklearn.preprocessing import LabelEncoder
 import pickle
 
-from model import MultiTaskTransformer, ModelConfig, multitask_loss
+from model import MultiTaskTransformer, ModelConfig, ctr_loss
 
 class CTRDataset(Dataset):
     def __init__(self, df, config):
@@ -31,12 +32,8 @@ class CTRDataset(Dataset):
             row[feat] for feat in self.config.dense_feats
         ], dtype=torch.float32)
         
-        # Labels
-        labels = {
-            'ctr': torch.tensor(row['clicked'], dtype=torch.long),
-            'clicked': torch.tensor(row['clicked'], dtype=torch.long),
-            'converted': torch.tensor(row['converted'], dtype=torch.long)
-        }
+        # Labels (only CTR prediction for this dataset)
+        labels = torch.tensor(row['clicked'], dtype=torch.long)
         
         return {
             **sparse_features,
@@ -45,9 +42,17 @@ class CTRDataset(Dataset):
         }
 
 def train_model():
-    # Load data
-    df = pd.read_csv('ctr_data.csv')
-    
+    # Load data (샘플링)
+    df = pd.read_parquet('/home/klcube/lim/train/ctr/data/train.parquet')
+    df = df.sample(n=50000, random_state=42)  # 5만 샘플로 빠른 테스트
+
+    # 범주형 데이터 인코딩
+    categorical_cols = [col for col in df.columns if df[col].dtype == 'object']
+    for col in categorical_cols:
+        if col != 'clicked':  # 라벨 제외
+            le = LabelEncoder()
+            df[col] = le.fit_transform(df[col].astype(str))
+
     # Split data
     train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
     train_df, val_df = train_test_split(train_df, test_size=0.2, random_state=42)
@@ -85,10 +90,10 @@ def train_model():
             # Prepare batch
             batch_input = {k: v for k, v in batch.items() if k != 'labels'}
             labels = batch['labels']
-            
+
             # Forward pass
             preds = model(batch_input)
-            loss = multitask_loss(preds, labels)
+            loss = ctr_loss(preds, labels)
             
             # Backward pass
             loss.backward()
@@ -108,11 +113,11 @@ def train_model():
                 labels = batch['labels']
                 
                 preds = model(batch_input)
-                loss = multitask_loss(preds, labels)
+                loss = ctr_loss(preds, labels)
                 val_loss += loss.item()
-                
-                val_preds_ctr.extend(preds['p_ctr'].squeeze().cpu().numpy())
-                val_labels_ctr.extend(labels['ctr'].cpu().numpy())
+
+                val_preds_ctr.extend(preds.squeeze().cpu().numpy())
+                val_labels_ctr.extend(labels.cpu().numpy())
         
         # Calculate metrics
         val_auc = roc_auc_score(val_labels_ctr, val_preds_ctr)
@@ -139,24 +144,16 @@ def train_model():
     
     test_preds_ctr = []
     test_labels_ctr = []
-    test_preds_cvr = []
-    test_labels_cvr = []
-    
+
     with torch.no_grad():
         for batch in test_loader:
             batch_input = {k: v for k, v in batch.items() if k != 'labels'}
             labels = batch['labels']
-            
+
             preds = model(batch_input)
-            
-            test_preds_ctr.extend(preds['p_ctr'].squeeze().cpu().numpy())
-            test_labels_ctr.extend(labels['ctr'].cpu().numpy())
-            
-            # CVR only for clicked samples
-            clicked_mask = labels['clicked'] == 1
-            if clicked_mask.sum() > 0:
-                test_preds_cvr.extend(preds['p_cvr'][clicked_mask].squeeze().cpu().numpy())
-                test_labels_cvr.extend(labels['converted'][clicked_mask].cpu().numpy())
+
+            test_preds_ctr.extend(preds.squeeze().cpu().numpy())
+            test_labels_ctr.extend(labels.cpu().numpy())
     
     # Test metrics
     test_ctr_auc = roc_auc_score(test_labels_ctr, test_preds_ctr)
@@ -166,10 +163,6 @@ def train_model():
     print("TEST RESULTS:")
     print(f"CTR AUC: {test_ctr_auc:.4f}")
     print(f"CTR LogLoss: {test_ctr_logloss:.4f}")
-    
-    if len(test_labels_cvr) > 0:
-        test_cvr_auc = roc_auc_score(test_labels_cvr, test_preds_cvr)
-        print(f"CVR AUC: {test_cvr_auc:.4f}")
     
     return model
 

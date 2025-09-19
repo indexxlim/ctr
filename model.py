@@ -24,7 +24,7 @@ class MLP(nn.Module):
         
         for hidden_dim in hidden_dims:
             layers.append(nn.Linear(prev_dim, hidden_dim))
-            layers.append(nn.ReLU())
+            layers.append(nn.GELU())
             layers.append(nn.Dropout(dropout))
             prev_dim = hidden_dim
             
@@ -53,12 +53,7 @@ class MultiTaskTransformer(nn.Module):
                              hidden_dims=config.hidden_dims)
         
         # task heads
-        self.ctr_head = MLP(input_dim=config.hidden_dims[-1], output_dim=1)
-        self.cvr_head = MLP(input_dim=config.hidden_dims[-1], output_dim=1)
-        self.ctcvr_head = MLP(input_dim=config.hidden_dims[-1], output_dim=1)
-        
-        # optional uncertainty head
-        self.uncertainty_head = MLP(input_dim=config.hidden_dims[-1], output_dim=1)
+        self.ctr_head = nn.Linear(config.hidden_dims[-1], 1)
 
     def forward(self, batch):
         # embed sparse features
@@ -80,73 +75,34 @@ class MultiTaskTransformer(nn.Module):
         # shared representation
         shared = self.shared_mlp(x)
         
-        # task predictions
+        # task predictions (only CTR)
         p_ctr = torch.sigmoid(self.ctr_head(shared))
-        p_cvr = torch.sigmoid(self.cvr_head(shared))
-        p_ctcvr = torch.sigmoid(self.ctcvr_head(shared))
-        
-        return {"p_ctr": p_ctr, "p_cvr": p_cvr, "p_ctcvr": p_ctcvr}
+
+        return p_ctr
 
 class ModelConfig:
     def __init__(self):
         self.sparse_feats = {
-            'user_id_encoded': 5000,
-            'item_id_encoded': 1000,
-            'category_encoded': 5,
-            'device_encoded': 3,
-            'time_of_day_encoded': 4
+            'gender': 5,
+            'age_group': 15,
+            'inventory_id': 50,
+            'day_of_week': 10,
+            'hour': 30
         }
-        self.dense_feats = ['user_age', 'price', 'item_rating', 'user_historical_ctr', 
-                           'position', 'page_views', 'session_duration']
-        self.embed_dim = 32
-        self.d_model = 128
-        self.hidden_dims = [256, 128, 64]
+        self.dense_feats = ['seq'] + [f'l_feat_{i}' for i in range(1, 28)] + \
+                          [f'feat_e_{i}' for i in range(1, 11)] + \
+                          [f'feat_d_{i}' for i in range(1, 7)] + \
+                          [f'feat_c_{i}' for i in range(1, 9)] + \
+                          [f'feat_b_{i}' for i in range(1, 7)] + \
+                          [f'feat_a_{i}' for i in range(1, 19)] + \
+                          [f'history_a_{i}' for i in range(1, 8)] + \
+                          [f'history_b_{i}' for i in range(1, 31)]
+        self.embed_dim = 16
+        self.d_model = 64
+        self.hidden_dims = [128, 64]
 
-# Loss, training
-def multitask_loss(preds, labels, weights=None):
-    if weights is None:
-        weights = {'ctr': 1.0, 'cvr': 0.5, 'ctcvr': 0.3}
-    
-    # CTR loss
-    loss_ctr = F.binary_cross_entropy(preds['p_ctr'].squeeze(), labels['ctr'].float())
-    
-    # CVR loss - only on clicked samples
-    clicked_mask = labels['clicked'] == 1
-    if clicked_mask.sum() > 0:
-        loss_cvr = F.binary_cross_entropy(
-            preds['p_cvr'][clicked_mask].squeeze(), 
-            labels['converted'][clicked_mask].float()
-        )
-    else:
-        loss_cvr = torch.tensor(0.0)
-    
-    # CTCVR loss
-    loss_ctcvr = F.binary_cross_entropy(preds['p_ctcvr'].squeeze(), labels['converted'].float())
-    
-    return weights['ctr'] * loss_ctr + weights['cvr'] * loss_cvr + weights['ctcvr'] * loss_ctcvr
+# Loss function for CTR prediction
+def ctr_loss(preds, labels):
+    return F.binary_cross_entropy(preds.squeeze(), labels.float())
 
-# Training loop
-for epoch in range(E):
-    for batch in dataloader:
-        preds = model(batch)
-        loss = multitask_loss(preds, batch.labels, config.loss_weights)
-        loss.backward()
-        optimizer.step()
-        scheduler.step()
-
-# Calibration: Temperature Scaling (post-hoc on validation)
-# Find temperature T minimizing NLL on val set:
-def find_temperature(model, val_loader):
-    T = Parameter(torch.ones(1))
-    optimizer = Adam([T], lr=0.01)
-    for i in range(1000):
-        nll = 0
-        for batch in val_loader:
-            logits = logit(model(batch)['p_ctr'])  # inverse sigmoid
-            scaled = logits / T
-            nll += binary_cross_entropy_with_logits(scaled, batch.labels['ctr'])
-        nll.backward(); optimizer.step(); optimizer.zero_grad()
-    return float(T.detach())
-
-# Save model + temp to ModelRegistry
 

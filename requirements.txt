@@ -2,4 +2,5 @@ torch
 pandas
 numpy
 scikit-learn
-pyarrow                                        
+pyarrow
+tqdm

@@ -1,0 +1,4 @@
+2025-09-22 17:25:52,109 - INFO - Starting CTR model training...
+2025-09-22 17:26:05,398 - INFO - Data loaded - Train: 6850674, Val: 1712669, Test: 2140836
+2025-09-22 17:26:06,833 - INFO - Using device: cuda
+2025-09-22 17:26:07,263 - INFO - Model created with 35937 parameters

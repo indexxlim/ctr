@@ -49,8 +49,14 @@ class MultiTaskTransformer(nn.Module):
         
         # shared MLP
         total_embed_dim = len(config.sparse_feats) * config.embed_dim + config.d_model
-        self.shared_mlp = MLP(input_dim=total_embed_dim, 
-                             hidden_dims=config.hidden_dims)
+        self.shared_mlp = nn.Sequential(
+            nn.Linear(total_embed_dim, config.hidden_dims[0]),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(config.hidden_dims[0], config.hidden_dims[1]),
+            nn.GELU(),
+            nn.Dropout(0.1)
+        )
         
         # task heads
         self.ctr_head = nn.Linear(config.hidden_dims[-1], 1)
@@ -75,10 +81,10 @@ class MultiTaskTransformer(nn.Module):
         # shared representation
         shared = self.shared_mlp(x)
         
-        # task predictions (only CTR)
-        p_ctr = torch.sigmoid(self.ctr_head(shared))
+        # task predictions (only CTR) - return logits
+        logits = self.ctr_head(shared)
 
-        return p_ctr
+        return logits
 
 class ModelConfig:
     def __init__(self):
@@ -102,7 +108,7 @@ class ModelConfig:
         self.hidden_dims = [128, 64]
 
 # Loss function for CTR prediction
-def ctr_loss(preds, labels):
-    return F.binary_cross_entropy(preds.squeeze(), labels.float())
+def ctr_loss(logits, labels):
+    return F.binary_cross_entropy_with_logits(logits.squeeze(), labels.float())
 
 

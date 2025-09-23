@@ -14,7 +14,6 @@ import json
 import logging
 from datetime import datetime
 import shutil
-import time
 
 from model import MultiTaskTransformer, ModelConfig, ctr_loss
 
@@ -290,14 +289,9 @@ def train_model():
     test_loader = DataLoader(test_dataset, batch_size=8192, shuffle=False,
                             num_workers=2, pin_memory=True, persistent_workers=True)
 
-    # Optimizer and scheduler (Warmup 포함된 CosineAnnealingWarmRestarts)
-    optimizer = optim.Adam(model.parameters(), lr=0.003, weight_decay=1e-5)
-    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=1e-6)
-
-    # Mixed Precision Training 설정
-    scaler = torch.cuda.amp.GradScaler() if device.type == 'cuda' else None
-    use_amp = device.type == 'cuda'
-    logging.info(f"Mixed Precision Training: {'Enabled' if use_amp else 'Disabled'}")
+    # Optimizer and scheduler
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+    scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
 
     # Training history
     train_history = {
@@ -313,13 +307,8 @@ def train_model():
     # Training loop
     epochs = 20
     best_val_loss = float('inf')
-
-    # 전체 학습 시간 측정 시작
-    total_start_time = time.time()
-    logging.info("Starting training loop...")
-
+    
     for epoch in range(epochs):
-        epoch_start_time = time.time()
         # Training
         model.train()
         train_loss = 0.0
@@ -327,27 +316,19 @@ def train_model():
         train_bar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{epochs} Training')
         for batch in train_bar:
             optimizer.zero_grad()
-
+            
             # Prepare batch and move to device
             batch_input = {k: v.to(device) for k, v in batch.items() if k != 'labels'}
             labels = batch['labels'].to(device)
 
-            # Mixed Precision Forward pass
-            if use_amp:
-                with torch.cuda.amp.autocast():
-                    preds = model(batch_input)
-                    loss = ctr_loss(preds, labels)
-                # Backward pass with scaling
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
-            else:
-                # Standard forward pass
-                preds = model(batch_input)
-                loss = ctr_loss(preds, labels)
-                loss.backward()
-                optimizer.step()
-
+            # Forward pass
+            preds = model(batch_input)
+            loss = ctr_loss(preds, labels)
+            
+            # Backward pass
+            loss.backward()
+            optimizer.step()
+            
             train_loss += loss.item()
 
             # Update progress bar with current loss
@@ -397,9 +378,6 @@ def train_model():
         train_history['val_logloss'].append(val_logloss)
         train_history['learning_rates'].append(current_lr)
 
-        # 에포크 시간 측정
-        epoch_time = time.time() - epoch_start_time
-
         # Logging
         logging.info(f'Epoch {epoch+1}/{epochs}:')
         logging.info(f'  Train Loss: {avg_train_loss:.4f}')
@@ -407,14 +385,6 @@ def train_model():
         logging.info(f'  Val AUC: {val_auc:.4f}')
         logging.info(f'  Val LogLoss: {val_logloss:.4f}')
         logging.info(f'  Learning Rate: {current_lr:.6f}')
-        logging.info(f'  Epoch Time: {epoch_time:.2f}s')
-
-        # ETA 계산
-        avg_epoch_time = (time.time() - total_start_time) / (epoch + 1)
-        remaining_epochs = epochs - (epoch + 1)
-        eta_seconds = avg_epoch_time * remaining_epochs
-        eta_minutes = eta_seconds / 60
-        logging.info(f'  ETA: {eta_minutes:.1f} minutes ({eta_seconds:.0f}s)')
 
         # Save best model
         if val_loss < best_val_loss:

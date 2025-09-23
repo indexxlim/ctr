@@ -2,3 +2,195 @@
 2025-09-22 17:26:05,398 - INFO - Data loaded - Train: 6850674, Val: 1712669, Test: 2140836
 2025-09-22 17:26:06,833 - INFO - Using device: cuda
 2025-09-22 17:26:07,263 - INFO - Model created with 35937 parameters
+2025-09-22 18:15:18,553 - INFO - Epoch 1/20:
+2025-09-22 18:15:18,553 - INFO -   Train Loss: 0.0906
+2025-09-22 18:15:18,553 - INFO -   Val Loss: 0.0877
+2025-09-22 18:15:18,553 - INFO -   Val AUC: 0.7250
+2025-09-22 18:15:18,553 - INFO -   Val LogLoss: 0.0877
+2025-09-22 18:15:18,553 - INFO -   Learning Rate: 0.001000
+2025-09-22 18:15:18,556 - INFO -   New best model saved at epoch 1!
+2025-09-22 19:04:00,646 - INFO - Epoch 2/20:
+2025-09-22 19:04:00,646 - INFO -   Train Loss: 0.0875
+2025-09-22 19:04:00,646 - INFO -   Val Loss: 0.0876
+2025-09-22 19:04:00,646 - INFO -   Val AUC: 0.7310
+2025-09-22 19:04:00,646 - INFO -   Val LogLoss: 0.0876
+2025-09-22 19:04:00,646 - INFO -   Learning Rate: 0.001000
+2025-09-22 19:04:00,649 - INFO -   New best model saved at epoch 2!
+2025-09-22 19:52:06,862 - INFO - Epoch 3/20:
+2025-09-22 19:52:06,862 - INFO -   Train Loss: 0.0871
+2025-09-22 19:52:06,862 - INFO -   Val Loss: 0.0872
+2025-09-22 19:52:06,862 - INFO -   Val AUC: 0.7320
+2025-09-22 19:52:06,862 - INFO -   Val LogLoss: 0.0872
+2025-09-22 19:52:06,862 - INFO -   Learning Rate: 0.001000
+2025-09-22 19:52:06,865 - INFO -   New best model saved at epoch 3!
+2025-09-22 20:40:14,048 - INFO - Epoch 4/20:
+2025-09-22 20:40:14,049 - INFO -   Train Loss: 0.0869
+2025-09-22 20:40:14,049 - INFO -   Val Loss: 0.0871
+2025-09-22 20:40:14,049 - INFO -   Val AUC: 0.7329
+2025-09-22 20:40:14,049 - INFO -   Val LogLoss: 0.0872
+2025-09-22 20:40:14,049 - INFO -   Learning Rate: 0.001000
+2025-09-22 20:40:14,051 - INFO -   New best model saved at epoch 4!
+2025-09-22 21:28:19,946 - INFO - Epoch 5/20:
+2025-09-22 21:28:19,946 - INFO -   Train Loss: 0.0867
+2025-09-22 21:28:19,946 - INFO -   Val Loss: 0.0870
+2025-09-22 21:28:19,946 - INFO -   Val AUC: 0.7352
+2025-09-22 21:28:19,946 - INFO -   Val LogLoss: 0.0870
+2025-09-22 21:28:19,947 - INFO -   Learning Rate: 0.001000
+2025-09-22 21:28:19,949 - INFO -   New best model saved at epoch 5!
+2025-09-22 22:16:27,307 - INFO - Epoch 6/20:
+2025-09-22 22:16:27,307 - INFO -   Train Loss: 0.0861
+2025-09-22 22:16:27,307 - INFO -   Val Loss: 0.0869
+2025-09-22 22:16:27,307 - INFO -   Val AUC: 0.7373
+2025-09-22 22:16:27,307 - INFO -   Val LogLoss: 0.0869
+2025-09-22 22:16:27,307 - INFO -   Learning Rate: 0.000500
+2025-09-22 22:16:27,309 - INFO -   New best model saved at epoch 6!
+2025-09-22 23:04:33,659 - INFO - Epoch 7/20:
+2025-09-22 23:04:33,659 - INFO -   Train Loss: 0.0860
+2025-09-22 23:04:33,659 - INFO -   Val Loss: 0.0868
+2025-09-22 23:04:33,659 - INFO -   Val AUC: 0.7367
+2025-09-22 23:04:33,659 - INFO -   Val LogLoss: 0.0868
+2025-09-22 23:04:33,659 - INFO -   Learning Rate: 0.000500
+2025-09-22 23:04:33,662 - INFO -   New best model saved at epoch 7!
+2025-09-22 23:52:44,161 - INFO - Epoch 8/20:
+2025-09-22 23:52:44,161 - INFO -   Train Loss: 0.0859
+2025-09-22 23:52:44,161 - INFO -   Val Loss: 0.0867
+2025-09-22 23:52:44,161 - INFO -   Val AUC: 0.7383
+2025-09-22 23:52:44,161 - INFO -   Val LogLoss: 0.0867
+2025-09-22 23:52:44,162 - INFO -   Learning Rate: 0.000500
+2025-09-22 23:52:44,164 - INFO -   New best model saved at epoch 8!
+2025-09-23 00:40:48,828 - INFO - Epoch 9/20:
+2025-09-23 00:40:48,828 - INFO -   Train Loss: 0.0858
+2025-09-23 00:40:48,828 - INFO -   Val Loss: 0.0867
+2025-09-23 00:40:48,828 - INFO -   Val AUC: 0.7387
+2025-09-23 00:40:48,828 - INFO -   Val LogLoss: 0.0867
+2025-09-23 00:40:48,828 - INFO -   Learning Rate: 0.000500
+2025-09-23 01:28:58,315 - INFO - Epoch 10/20:
+2025-09-23 01:28:58,315 - INFO -   Train Loss: 0.0858
+2025-09-23 01:28:58,315 - INFO -   Val Loss: 0.0868
+2025-09-23 01:28:58,315 - INFO -   Val AUC: 0.7376
+2025-09-23 01:28:58,316 - INFO -   Val LogLoss: 0.0869
+2025-09-23 01:28:58,316 - INFO -   Learning Rate: 0.000500
+2025-09-23 02:17:03,579 - INFO - Epoch 11/20:
+2025-09-23 02:17:03,579 - INFO -   Train Loss: 0.0854
+2025-09-23 02:17:03,579 - INFO -   Val Loss: 0.0865
+2025-09-23 02:17:03,579 - INFO -   Val AUC: 0.7394
+2025-09-23 02:17:03,579 - INFO -   Val LogLoss: 0.0866
+2025-09-23 02:17:03,579 - INFO -   Learning Rate: 0.000250
+2025-09-23 02:17:03,582 - INFO -   New best model saved at epoch 11!
+2025-09-23 03:05:11,077 - INFO - Epoch 12/20:
+2025-09-23 03:05:11,077 - INFO -   Train Loss: 0.0854
+2025-09-23 03:05:11,077 - INFO -   Val Loss: 0.0866
+2025-09-23 03:05:11,077 - INFO -   Val AUC: 0.7388
+2025-09-23 03:05:11,077 - INFO -   Val LogLoss: 0.0866
+2025-09-23 03:05:11,077 - INFO -   Learning Rate: 0.000250
+2025-09-23 03:53:21,497 - INFO - Epoch 13/20:
+2025-09-23 03:53:21,497 - INFO -   Train Loss: 0.0853
+2025-09-23 03:53:21,497 - INFO -   Val Loss: 0.0866
+2025-09-23 03:53:21,497 - INFO -   Val AUC: 0.7390
+2025-09-23 03:53:21,497 - INFO -   Val LogLoss: 0.0866
+2025-09-23 03:53:21,498 - INFO -   Learning Rate: 0.000250
+2025-09-23 04:41:29,827 - INFO - Epoch 14/20:
+2025-09-23 04:41:29,827 - INFO -   Train Loss: 0.0853
+2025-09-23 04:41:29,827 - INFO -   Val Loss: 0.0866
+2025-09-23 04:41:29,827 - INFO -   Val AUC: 0.7386
+2025-09-23 04:41:29,827 - INFO -   Val LogLoss: 0.0866
+2025-09-23 04:41:29,827 - INFO -   Learning Rate: 0.000250
+2025-09-23 05:29:37,702 - INFO - Epoch 15/20:
+2025-09-23 05:29:37,702 - INFO -   Train Loss: 0.0852
+2025-09-23 05:29:37,702 - INFO -   Val Loss: 0.0867
+2025-09-23 05:29:37,703 - INFO -   Val AUC: 0.7388
+2025-09-23 05:29:37,703 - INFO -   Val LogLoss: 0.0867
+2025-09-23 05:29:37,703 - INFO -   Learning Rate: 0.000250
+2025-09-23 06:17:43,009 - INFO - Epoch 16/20:
+2025-09-23 06:17:43,009 - INFO -   Train Loss: 0.0851
+2025-09-23 06:17:43,009 - INFO -   Val Loss: 0.0866
+2025-09-23 06:17:43,009 - INFO -   Val AUC: 0.7387
+2025-09-23 06:17:43,009 - INFO -   Val LogLoss: 0.0866
+2025-09-23 06:17:43,009 - INFO -   Learning Rate: 0.000125
+2025-09-23 07:05:54,351 - INFO - Epoch 17/20:
+2025-09-23 07:05:54,351 - INFO -   Train Loss: 0.0850
+2025-09-23 07:05:54,351 - INFO -   Val Loss: 0.0865
+2025-09-23 07:05:54,351 - INFO -   Val AUC: 0.7388
+2025-09-23 07:05:54,351 - INFO -   Val LogLoss: 0.0866
+2025-09-23 07:05:54,351 - INFO -   Learning Rate: 0.000125
+2025-09-23 07:05:54,354 - INFO -   New best model saved at epoch 17!
+2025-09-23 07:54:00,917 - INFO - Epoch 18/20:
+2025-09-23 07:54:00,917 - INFO -   Train Loss: 0.0850
+2025-09-23 07:54:00,917 - INFO -   Val Loss: 0.0866
+2025-09-23 07:54:00,917 - INFO -   Val AUC: 0.7388
+2025-09-23 07:54:00,917 - INFO -   Val LogLoss: 0.0866
+2025-09-23 07:54:00,917 - INFO -   Learning Rate: 0.000125
+2025-09-23 08:42:04,920 - INFO - Epoch 19/20:
+2025-09-23 08:42:04,920 - INFO -   Train Loss: 0.0849
+2025-09-23 08:42:04,920 - INFO -   Val Loss: 0.0867
+2025-09-23 08:42:04,920 - INFO -   Val AUC: 0.7384
+2025-09-23 08:42:04,920 - INFO -   Val LogLoss: 0.0867
+2025-09-23 08:42:04,920 - INFO -   Learning Rate: 0.000125
+2025-09-23 09:30:11,452 - INFO - Epoch 20/20:
+2025-09-23 09:30:11,452 - INFO -   Train Loss: 0.0849
+2025-09-23 09:30:11,452 - INFO -   Val Loss: 0.0867
+2025-09-23 09:30:11,452 - INFO -   Val AUC: 0.7383
+2025-09-23 09:30:11,452 - INFO -   Val LogLoss: 0.0867
+2025-09-23 09:30:11,452 - INFO -   Learning Rate: 0.000125
+2025-09-23 09:30:11,452 - INFO - Starting model evaluation...
+2025-09-23 09:30:11,452 - INFO - Loading model from: ./experiments/exp_20250922_172552/models/best_model_checkpoint.pth
+2025-09-23 09:41:03,506 - INFO - ==================================================
+2025-09-23 09:41:03,507 - INFO - EVALUATION RESULTS:
+2025-09-23 09:41:03,507 - INFO - CTR AUC: 0.7379
+2025-09-23 09:41:03,507 - INFO - CTR LogLoss: 0.0866
+2025-09-23 09:41:03,507 - INFO - Test Samples: 2140836
+2025-09-23 09:41:03,507 - INFO - ==================================================
+2025-09-23 09:41:03,556 - INFO - All training artifacts saved to: ./experiments/exp_20250922_172552
+2025-09-23 09:41:03,556 - INFO - Training completed successfully!
+2025-09-23 09:41:03,556 - INFO - All results saved to: ./experiments/exp_20250922_172552
+2025-09-23 09:41:10,766 - INFO - Starting CTR model training...
+2025-09-23 09:41:22,108 - INFO - Data loaded - Train: 6850674, Val: 1712669, Test: 2140836
+2025-09-23 09:41:22,108 - INFO - Using device: cuda
+2025-09-23 09:41:22,110 - INFO - Model created with 35937 parameters
+2025-09-23 10:31:24,731 - INFO - Epoch 1/20:
+2025-09-23 10:31:24,731 - INFO -   Train Loss: 0.0904
+2025-09-23 10:31:24,731 - INFO -   Val Loss: 0.0877
+2025-09-23 10:31:24,731 - INFO -   Val AUC: 0.7266
+2025-09-23 10:31:24,731 - INFO -   Val LogLoss: 0.0877
+2025-09-23 10:31:24,731 - INFO -   Learning Rate: 0.001000
+2025-09-23 10:31:24,734 - INFO -   New best model saved at epoch 1!
+2025-09-23 11:21:53,045 - INFO - Epoch 2/20:
+2025-09-23 11:21:53,045 - INFO -   Train Loss: 0.0874
+2025-09-23 11:21:53,045 - INFO -   Val Loss: 0.0883
+2025-09-23 11:21:53,045 - INFO -   Val AUC: 0.7308
+2025-09-23 11:21:53,045 - INFO -   Val LogLoss: 0.0883
+2025-09-23 11:21:53,045 - INFO -   Learning Rate: 0.001000
+2025-09-23 12:11:26,996 - INFO - Epoch 3/20:
+2025-09-23 12:11:26,996 - INFO -   Train Loss: 0.0870
+2025-09-23 12:11:26,996 - INFO -   Val Loss: 0.0873
+2025-09-23 12:11:26,996 - INFO -   Val AUC: 0.7336
+2025-09-23 12:11:26,996 - INFO -   Val LogLoss: 0.0873
+2025-09-23 12:11:26,996 - INFO -   Learning Rate: 0.001000
+2025-09-23 12:11:26,999 - INFO -   New best model saved at epoch 3!
+2025-09-23 13:01:06,197 - INFO - Epoch 4/20:
+2025-09-23 13:01:06,198 - INFO -   Train Loss: 0.0867
+2025-09-23 13:01:06,198 - INFO -   Val Loss: 0.0874
+2025-09-23 13:01:06,198 - INFO -   Val AUC: 0.7332
+2025-09-23 13:01:06,198 - INFO -   Val LogLoss: 0.0874
+2025-09-23 13:01:06,198 - INFO -   Learning Rate: 0.001000
+2025-09-23 13:50:45,333 - INFO - Epoch 5/20:
+2025-09-23 13:50:45,333 - INFO -   Train Loss: 0.0866
+2025-09-23 13:50:45,333 - INFO -   Val Loss: 0.0872
+2025-09-23 13:50:45,333 - INFO -   Val AUC: 0.7341
+2025-09-23 13:50:45,333 - INFO -   Val LogLoss: 0.0872
+2025-09-23 13:50:45,333 - INFO -   Learning Rate: 0.001000
+2025-09-23 13:50:45,336 - INFO -   New best model saved at epoch 5!
+2025-09-23 14:40:16,800 - INFO - Epoch 6/20:
+2025-09-23 14:40:16,800 - INFO -   Train Loss: 0.0860
+2025-09-23 14:40:16,800 - INFO -   Val Loss: 0.0867
+2025-09-23 14:40:16,800 - INFO -   Val AUC: 0.7379
+2025-09-23 14:40:16,800 - INFO -   Val LogLoss: 0.0868
+2025-09-23 14:40:16,800 - INFO -   Learning Rate: 0.000500
+2025-09-23 14:40:16,802 - INFO -   New best model saved at epoch 6!
+2025-09-23 15:29:52,203 - INFO - Epoch 7/20:
+2025-09-23 15:29:52,204 - INFO -   Train Loss: 0.0859
+2025-09-23 15:29:52,204 - INFO -   Val Loss: 0.0867
+2025-09-23 15:29:52,204 - INFO -   Val AUC: 0.7384
+2025-09-23 15:29:52,204 - INFO -   Val LogLoss: 0.0867
+2025-09-23 15:29:52,204 - INFO -   Learning Rate: 0.000500
+2025-09-23 15:29:52,206 - INFO -   New best model saved at epoch 7!

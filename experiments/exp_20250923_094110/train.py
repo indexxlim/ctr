@@ -143,8 +143,6 @@ def setup_logging_and_save_dir():
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(f"{save_dir}/logs", exist_ok=True)
     os.makedirs(f"{save_dir}/models", exist_ok=True)
-    # Create dedicated models directory in root
-    os.makedirs("./saved_models", exist_ok=True)
 
     # 로깅 설정
     logging.basicConfig(
@@ -207,18 +205,9 @@ def evaluate_model(model, test_loader, device, model_path=None):
 def save_training_artifacts(save_dir, model, config, train_history, test_results):
     """학습 관련 모든 파일들을 저장"""
 
-    # 성능 지표를 포함한 파일명 생성
-    test_auc = test_results['ctr_auc']
-    test_logloss = test_results['ctr_logloss']
-    best_epoch = train_history['best_epoch']
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    # 성능 기반 파일명 형식: auc{auc:.4f}_logloss{logloss:.4f}_epoch{epoch}_{timestamp}
-    perf_suffix = f"auc{test_auc:.4f}_logloss{test_logloss:.4f}_epoch{best_epoch}_{timestamp}"
-
-    # 1. 실험 폴더 내 모델 저장 (.pth)
-    torch.save(model.state_dict(), f"{save_dir}/models/best_model_{perf_suffix}.pth")
-    torch.save(model, f"{save_dir}/models/full_model_{perf_suffix}.pth")
+    # 1. 모델 저장 (.pth)
+    torch.save(model.state_dict(), f"{save_dir}/models/best_model.pth")
+    torch.save(model, f"{save_dir}/models/full_model.pth")
 
     # 2. model.py 파일 복사
     if os.path.exists("model.py"):
@@ -254,15 +243,13 @@ def save_training_artifacts(save_dir, model, config, train_history, test_results
         'final_test_auc': test_results['ctr_auc'],
         'final_test_logloss': test_results['ctr_logloss'],
         'best_epoch': train_history['best_epoch'],
-        'best_val_loss': train_history['best_val_loss'],
-        'model_filename': f"model_{perf_suffix}.pth"
+        'best_val_loss': train_history['best_val_loss']
     }
 
     with open(f"{save_dir}/experiment_summary.json", 'w') as f:
         json.dump(summary, f, indent=2)
 
     logging.info(f"All training artifacts saved to: {save_dir}")
-    logging.info(f"Performance-based model saved to: ./saved_models/model_{perf_suffix}.pth")
     return save_dir
 
 def train_model():
@@ -429,21 +416,13 @@ def train_model():
         eta_minutes = eta_seconds / 60
         logging.info(f'  ETA: {eta_minutes:.1f} minutes ({eta_seconds:.0f}s)')
 
-        # Save best model with performance info
-        if avg_val_loss < best_val_loss:
-            best_val_loss = avg_val_loss
+        # Save best model
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
             train_history['best_epoch'] = epoch + 1
             train_history['best_val_loss'] = best_val_loss
-
-            # 성능 정보를 포함한 체크포인트 파일명
-            checkpoint_name = f"checkpoint_epoch{epoch+1}_auc{val_auc:.4f}_logloss{val_logloss:.4f}.pth"
-            torch.save(model.state_dict(), f'{save_dir}/models/{checkpoint_name}')
-
-            # 기본 체크포인트도 저장 (호환성 유지)
             torch.save(model.state_dict(), f'{save_dir}/models/best_model_checkpoint.pth')
-
             logging.info(f'  New best model saved at epoch {epoch+1}!')
-            logging.info(f'  Checkpoint: {checkpoint_name}')
 
         scheduler.step()
     

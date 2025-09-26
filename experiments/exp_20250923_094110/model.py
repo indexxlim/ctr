@@ -1,0 +1,94 @@
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import numpy as np
+from torch.optim import Adam
+from torch.nn.parameter import Parameter
+
+class EmbeddingTable(nn.Module):
+    def __init__(self, vocab_size, embed_dim):
+        super().__init__()
+        self.embedding = nn.Embedding(vocab_size, embed_dim)
+        
+    def forward(self, x):
+        return self.embedding(x)
+
+
+class MultiTaskTransformer(nn.Module):
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+        
+        # embedding tables for sparse features
+        self.embeddings = nn.ModuleDict()
+        for feat, vocab_size in config.sparse_feats.items():
+            self.embeddings[feat] = EmbeddingTable(vocab_size, config.embed_dim)
+        
+        # dense encoder projection
+        self.dense_proj = nn.Linear(len(config.dense_feats), config.d_model)
+        
+        # shared MLP
+        total_embed_dim = len(config.sparse_feats) * config.embed_dim + config.d_model
+        self.shared_mlp = nn.Sequential(
+            nn.Linear(total_embed_dim, config.hidden_dims[0]),
+            nn.GELU(),
+            nn.Dropout(0.1),
+            nn.Linear(config.hidden_dims[0], config.hidden_dims[1]),
+            nn.GELU(),
+            nn.Dropout(0.1)
+        )
+        
+        # task heads
+        self.ctr_head = nn.Linear(config.hidden_dims[-1], 1)
+
+    def forward(self, batch):
+        # embed sparse features
+        emb_list = []
+        for feat_name in self.config.sparse_feats.keys():
+            if feat_name in batch:
+                emb = self.embeddings[feat_name](batch[feat_name])
+                emb_list.append(emb)
+        
+        # process dense features
+        if 'dense_features' in batch:
+            dense = self.dense_proj(batch['dense_features'])
+        else:
+            dense = torch.zeros(batch[list(batch.keys())[0]].size(0), self.config.d_model)
+            
+        # concatenate all features
+        x = torch.cat(emb_list + [dense], dim=-1)  # shape [B, D]
+        
+        # shared representation
+        shared = self.shared_mlp(x)
+        
+        # task predictions (only CTR) - return logits
+        logits = self.ctr_head(shared)
+
+        return logits
+
+class ModelConfig:
+    def __init__(self):
+        self.sparse_feats = {
+            'gender': 5,
+            'age_group': 15,
+            'inventory_id': 50,
+            'day_of_week': 10,
+            'hour': 30
+        }
+        self.dense_feats = ['seq'] + [f'l_feat_{i}' for i in range(1, 28)] + \
+                          [f'feat_e_{i}' for i in range(1, 11)] + \
+                          [f'feat_d_{i}' for i in range(1, 7)] + \
+                          [f'feat_c_{i}' for i in range(1, 9)] + \
+                          [f'feat_b_{i}' for i in range(1, 7)] + \
+                          [f'feat_a_{i}' for i in range(1, 19)] + \
+                          [f'history_a_{i}' for i in range(1, 8)] + \
+                          [f'history_b_{i}' for i in range(1, 31)]
+        self.embed_dim = 16
+        self.d_model = 64
+        self.hidden_dims = [128, 64]
+
+# Loss function for CTR prediction
+def ctr_loss(logits, labels):
+    return F.binary_cross_entropy_with_logits(logits.squeeze(), labels.float())
+
+

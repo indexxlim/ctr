@@ -1,0 +1,8 @@
+2025-09-30 17:17:18,034 - INFO - Starting CTR model training...
+2025-09-30 17:17:18,034 - INFO - Loss configuration: Focal Loss=True, Label Smoothing=0.05
+2025-09-30 17:17:27,027 - INFO - Data loaded - Train: 6850674, Val: 1712669, Test: 2140836
+2025-09-30 17:17:28,072 - INFO - Using device: cuda
+2025-09-30 17:17:30,597 - INFO - Model compiled with torch.compile for faster training
+2025-09-30 17:17:30,597 - INFO - Model created with 35937 parameters
+2025-09-30 17:17:30,598 - INFO - Mixed Precision Training: Enabled
+2025-09-30 17:17:30,598 - INFO - Starting training loop...

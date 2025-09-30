@@ -55,62 +55,106 @@ python train.py
 ### 🎯 High Priority
 
 - [ ] **Feature Interaction 구현**
-  - [ ] Cross features 추가
-  - [ ] Factorization Machines (FM) 레이어 구현
-  - [ ] DeepFM 또는 xDeepFM 아키텍처 적용
+  - [ ] DeepFM 또는 xDeepFM 아키텍처 적용 (FM + DNN의 end-to-end 학습)
+  - [ ] DCN v2 (Deep & Cross Network v2) - 명시적 feature crossing
+  - [ ] AutoInt - multi-head self-attention 기반 feature interaction
 
 - [ ] **Class Imbalance 처리**
-  - [ ] Focal Loss 구현 (CTR 데이터는 보통 클릭률 1-5%)
-  - [ ] Weighted Loss 추가
-  - [ ] SMOTE 또는 다른 샘플링 기법 검토
+  - [ ] Focal Loss 구현 (gamma=2 추천, CTR 클릭률 1-5%)
+  - [ ] Class-balanced Loss (effective number 기반 리샘플링)
+  - [ ] Negative sampling with hard negative mining
 
 - [ ] **Model Calibration (보정)**
-  - [ ] Platt Scaling 구현
-  - [ ] Isotonic Regression 추가
-  - [ ] 예측 확률과 실제 클릭률 일치도 평가
+  - [ ] Temperature Scaling (단일 파라미터로 빠른 보정)
+  - [ ] Platt Scaling (로지스틱 회귀 기반)
+  - [ ] Isotonic Regression (비모수적 보정)
+  - [ ] Expected Calibration Error (ECE) 및 Reliability Diagram으로 평가
 
 ### 🔧 Medium Priority
 
-- [ ] **Training 최적화**
-  - [ ] Early Stopping 구현
-  - [ ] Model Checkpointing 시스템
-  - [ ] Learning Rate Scheduling 개선 (CosineAnnealing, ReduceLROnPlateau)
-  - [ ] Gradient Clipping 추가
+- [x] **Training 최적화** (이미 구현됨)
+  - [x] Model Checkpointing 시스템 (성능 기반 저장)
+  - [x] Learning Rate Scheduling (CosineAnnealingWarmRestarts 적용)
+  - [x] Mixed Precision Training (AMP 사용)
+  - [ ] Early Stopping with patience (validation loss 기반)
+  - [ ] Gradient Clipping (norm=1.0 추천)
+  - [ ] SWA (Stochastic Weight Averaging) - 마지막 epoch들 평균
 
 - [ ] **Regularization 강화**
-  - [ ] L2 Regularization 추가
-  - [ ] Dropout rate 하이퍼파라미터 튜닝
-  - [ ] Batch Normalization 레이어 검토
+  - [x] L2 Regularization (weight_decay=1e-5 적용됨)
+  - [x] Dropout (0.1 적용됨)
+  - [ ] Label Smoothing (hard label을 soft label로)
+  - [ ] Embedding Dropout (sparse feature용)
+  - [ ] DropConnect (weight dropout)
 
 - [ ] **Embedding 최적화**
-  - [ ] Embedding dimension 자동 조정 (rule-based)
-  - [ ] Hash Embedding for high cardinality features
-  - [ ] Embedding 초기화 방법 최적화
+  - [ ] Adaptive Embedding dimension: `min(50, int(vocab_size**0.25))`
+  - [ ] Hash Embedding for high cardinality features (>10K vocab)
+  - [ ] Shared Embeddings for related features (user_id, session_id 등)
+  - [ ] Embedding Regularization (L2 on embeddings)
 
 ### 🚀 Advanced Features
 
-- [ ] **Negative Sampling**
-  - [ ] 대규모 categorical features 효율적 처리
-  - [ ] Hierarchical Softmax 검토
+- [ ] **Context-aware Feature Engineering**
+  - [ ] Temporal features (시간대별 CTR 패턴, recency)
+  - [ ] User behavior sequence modeling (LSTM/GRU for click history)
+  - [ ] Cross-domain features (user profile + item features interaction)
 
 - [ ] **Multi-Task Learning 확장**
-  - [ ] CVR (Conversion Rate) 예측 태스크 추가
-  - [ ] CTR + CVR joint training (MMOE, PLE 등)
-  - [ ] Task-specific 가중치 학습
+  - [ ] ESMM (Entire Space Multi-Task Model) - CVR 예측 추가
+  - [ ] MMOE (Multi-gate Mixture-of-Experts) - task-specific experts
+  - [ ] PLE (Progressive Layered Extraction) - task separation 개선
+  - [ ] Uncertainty-based task weighting (homoscedastic uncertainty)
 
 - [ ] **Advanced Architectures**
-  - [ ] Attention 메커니즘 추가
-  - [ ] Feature Selection 자동화
-  - [ ] Neural Architecture Search (NAS) 적용 검토
+  - [ ] FiBiNET - Bilinear feature interaction
+  - [ ] DLRM (Deep Learning Recommendation Model) - Facebook 아키텍처
+  - [ ] BST (Behavior Sequence Transformer) - Transformer for user sequences
+  - [ ] Feature Gating Network (FGN) - 동적 feature selection
 
 ### 📊 Monitoring & Evaluation
 
 - [ ] **평가 지표 확장**
-  - [ ] Calibration metrics (Brier Score, Reliability Diagram)
-  - [ ] Business metrics (Revenue, ROAS)
-  - [ ] A/B Test framework 준비
+  - [ ] Calibration metrics (Brier Score, ECE, MCE)
+  - [ ] GAUC (Group AUC) - user별 AUC 평균
+  - [ ] NDCG@K - ranking quality
+  - [ ] Business metrics (CTR, Revenue, ROAS, eCPM)
+
+- [ ] **온라인 평가 준비**
+  - [ ] A/B Test framework (treatment/control split)
+  - [ ] Interleaving 실험 설계
+  - [ ] Online model serving latency 측정 (<100ms)
 
 - [ ] **모델 해석성**
-  - [ ] Feature Importance 분석
-  - [ ] SHAP values 계산
-  - [ ] 모델 예측 결과 시각화
+  - [ ] Integrated Gradients (attribution 기반 importance)
+  - [ ] SHAP values (TreeSHAP 또는 DeepSHAP)
+  - [ ] Attention weight visualization
+  - [ ] Embedding space visualization (t-SNE, UMAP)
+
+### ⚡ 성능 최적화
+
+- [x] **추론 속도 개선** (일부 구현됨)
+  - [x] torch.compile() 적용 (PyTorch 2.0+)
+  - [x] Mixed Precision Inference
+  - [ ] ONNX 변환 및 최적화
+  - [ ] TensorRT 또는 OpenVINO 가속
+  - [ ] Embedding 양자화 (INT8)
+  - [ ] Knowledge Distillation (큰 모델 → 작은 모델)
+
+- [ ] **분산 학습**
+  - [ ] DDP (Distributed Data Parallel)
+  - [ ] FSDP (Fully Sharded Data Parallel) for large models
+  - [ ] Gradient Accumulation (메모리 부족 시)
+
+### 🔧 엔지니어링 개선
+
+- [ ] **데이터 파이프라인**
+  - [ ] Feature store 연동 (Feast, Tecton)
+  - [ ] Online feature serving (Redis, DynamoDB)
+  - [ ] Feature versioning 시스템
+
+- [ ] **모델 서빙**
+  - [ ] FastAPI 또는 TorchServe 기반 API
+  - [ ] Model versioning (A/B test 지원)
+  - [ ] Batch prediction pipeline
+  - [ ] Cold start 문제 해결 (default model)

@@ -88,7 +88,37 @@ class ModelConfig:
         self.hidden_dims = [128, 64]
 
 # Loss function for CTR prediction
-def ctr_loss(logits, labels):
+def ctr_loss(logits, labels, label_smoothing=0.0):
+    """CTR loss with optional label smoothing"""
+    if label_smoothing > 0:
+        # Label smoothing: convert hard labels to soft labels
+        # 0 -> label_smoothing, 1 -> 1 - label_smoothing
+        labels = labels.float()
+        labels = labels * (1 - label_smoothing) + 0.5 * label_smoothing
     return F.binary_cross_entropy_with_logits(logits.squeeze(), labels.float())
+
+# Focal Loss for class imbalance
+def focal_loss(logits, labels, alpha=0.25, gamma=2.0):
+    """
+    Focal Loss for addressing class imbalance in CTR prediction
+
+    Args:
+        logits: model predictions (before sigmoid)
+        alpha: balancing factor (default: 0.25 for minority class)
+        gamma: focusing parameter (default: 2.0)
+    """
+    bce_loss = F.binary_cross_entropy_with_logits(logits.squeeze(), labels.float(), reduction='none')
+    probs = torch.sigmoid(logits.squeeze())
+
+    # Calculate focal weight
+    labels_float = labels.float()
+    pt = torch.where(labels_float == 1, probs, 1 - probs)
+    focal_weight = (1 - pt) ** gamma
+
+    # Apply alpha balancing
+    alpha_t = torch.where(labels_float == 1, alpha, 1 - alpha)
+
+    loss = alpha_t * focal_weight * bce_loss
+    return loss.mean()
 
 

@@ -16,7 +16,7 @@ from datetime import datetime
 import shutil
 import time
 
-from model import MultiTaskTransformer, ModelConfig, ctr_loss
+from model import MultiTaskTransformer, ModelConfig, ctr_loss, focal_loss
 
 class CTRDataset(Dataset):
     def __init__(self, df, config):
@@ -265,10 +265,11 @@ def save_training_artifacts(save_dir, model, config, train_history, test_results
     logging.info(f"Performance-based model saved to: ./saved_models/model_{perf_suffix}.pth")
     return save_dir
 
-def train_model():
+def train_model(use_focal_loss=False, label_smoothing=0.0):
     # 실험 디렉토리 및 로깅 설정
     save_dir = setup_logging_and_save_dir()
     logging.info("Starting CTR model training...")
+    logging.info(f"Loss configuration: Focal Loss={use_focal_loss}, Label Smoothing={label_smoothing}")
 
     # Load or prepare data
     train_df, val_df, test_df, label_encoders, scaler = load_prepared_data()
@@ -327,6 +328,10 @@ def train_model():
     epochs = 20
     best_val_loss = float('inf')
 
+    # Early Stopping parameters
+    patience = 5
+    patience_counter = 0
+
     # 전체 학습 시간 측정 시작
     total_start_time = time.time()
     logging.info("Starting training loop...")
@@ -349,16 +354,27 @@ def train_model():
             if use_amp:
                 with torch.cuda.amp.autocast():
                     preds = model(batch_input)
-                    loss = ctr_loss(preds, labels)
+                    if use_focal_loss:
+                        loss = focal_loss(preds, labels)
+                    else:
+                        loss = ctr_loss(preds, labels, label_smoothing=label_smoothing)
                 # Backward pass with scaling
                 scaler.scale(loss).backward()
+                # Gradient Clipping
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 scaler.step(optimizer)
                 scaler.update()
             else:
                 # Standard forward pass
                 preds = model(batch_input)
-                loss = ctr_loss(preds, labels)
+                if use_focal_loss:
+                    loss = focal_loss(preds, labels)
+                else:
+                    loss = ctr_loss(preds, labels, label_smoothing=label_smoothing)
                 loss.backward()
+                # Gradient Clipping
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
                 optimizer.step()
 
             train_loss += loss.item()
@@ -434,6 +450,7 @@ def train_model():
             best_val_loss = avg_val_loss
             train_history['best_epoch'] = epoch + 1
             train_history['best_val_loss'] = best_val_loss
+            patience_counter = 0  # Reset patience counter
 
             # 성능 정보를 포함한 체크포인트 파일명
             checkpoint_name = f"checkpoint_epoch{epoch+1}_auc{val_auc:.4f}_logloss{val_logloss:.4f}.pth"
@@ -444,6 +461,15 @@ def train_model():
 
             logging.info(f'  New best model saved at epoch {epoch+1}!')
             logging.info(f'  Checkpoint: {checkpoint_name}')
+        else:
+            patience_counter += 1
+            logging.info(f'  No improvement. Patience: {patience_counter}/{patience}')
+
+        # Early Stopping check
+        if patience_counter >= patience:
+            logging.info(f'Early stopping triggered after {epoch+1} epochs!')
+            logging.info(f'Best validation loss: {best_val_loss:.4f} at epoch {train_history["best_epoch"]}')
+            break
 
         scheduler.step()
     
@@ -464,6 +490,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='CTR Model Training')
     parser.add_argument('--prepare-data', action='store_true',
                        help='Force data preparation even if processed data exists')
+    parser.add_argument('--focal-loss', action='store_true',
+                       help='Use Focal Loss instead of BCE')
+    parser.add_argument('--label-smoothing', type=float, default=0.0,
+                       help='Label smoothing factor (0.0 to 0.5)')
 
     args = parser.parse_args()
 
@@ -471,7 +501,7 @@ if __name__ == "__main__":
         print("Preparing data...")
         prepare_data()
 
-    model, save_dir = train_model()
+    model, save_dir = train_model(use_focal_loss=args.focal_loss, label_smoothing=args.label_smoothing)
     print(f"\n🎉 Training completed! All artifacts saved to: {save_dir}")
 
 def evaluate_saved_model(model_path, data_path=None):
@@ -507,6 +537,10 @@ if __name__ == "__main__":
                        help='Evaluate saved model only. Provide path to .pth file')
     parser.add_argument('--eval-data', type=str,
                        help='Path to test data for evaluation (optional)')
+    parser.add_argument('--focal-loss', action='store_true',
+                       help='Use Focal Loss instead of BCE')
+    parser.add_argument('--label-smoothing', type=float, default=0.0,
+                       help='Label smoothing factor (0.0 to 0.5)')
 
     args = parser.parse_args()
 
@@ -519,5 +553,5 @@ if __name__ == "__main__":
             print("Preparing data...")
             prepare_data()
 
-        model, save_dir = train_model()
+        model, save_dir = train_model(use_focal_loss=args.focal_loss, label_smoothing=args.label_smoothing)
         print(f"\n🎉 Training completed! All artifacts saved to: {save_dir}")

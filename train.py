@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim.swa_utils import AveragedModel, SWALR
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import numpy as np
@@ -313,6 +314,12 @@ def train_model(use_focal_loss=False, label_smoothing=0.0):
     use_amp = device.type == 'cuda'
     logging.info(f"Mixed Precision Training: {'Enabled' if use_amp else 'Disabled'}")
 
+    # SWA (Stochastic Weight Averaging) 설정
+    swa_model = AveragedModel(model)
+    swa_start = int(epochs * 0.7)  # 전체 epochs의 70%부터 SWA 시작
+    swa_scheduler = SWALR(optimizer, swa_lr=0.005)
+    logging.info(f"SWA will start from epoch {swa_start + 1}/{epochs}")
+
     # Training history
     train_history = {
         'train_loss': [],
@@ -471,7 +478,61 @@ def train_model(use_focal_loss=False, label_smoothing=0.0):
             logging.info(f'Best validation loss: {best_val_loss:.4f} at epoch {train_history["best_epoch"]}')
             break
 
-        scheduler.step()
+        # SWA Update
+        if epoch >= swa_start:
+            swa_model.update_parameters(model)
+            swa_scheduler.step()
+            logging.info(f'  SWA model updated (epoch {epoch+1 - swa_start}/{epochs - swa_start})')
+        else:
+            scheduler.step()
+
+    # SWA 최종 처리: BatchNorm statistics 업데이트
+    if epochs > swa_start:
+        logging.info("Updating SWA BatchNorm statistics...")
+        torch.optim.swa_utils.update_bn(train_loader, swa_model, device=device)
+
+        # SWA 모델 평가
+        logging.info("Evaluating SWA model on validation set...")
+        swa_model.eval()
+        swa_val_loss = 0.0
+        swa_val_preds = []
+        swa_val_labels = []
+
+        with torch.no_grad():
+            for batch in tqdm(val_loader, desc='SWA Validation'):
+                batch_input = {k: v.to(device) for k, v in batch.items() if k != 'labels'}
+                labels = batch['labels'].to(device)
+
+                logits = swa_model(batch_input)
+                loss = ctr_loss(logits, labels)
+                swa_val_loss += loss.item()
+
+                preds = torch.sigmoid(logits)
+                swa_val_preds.extend(preds.squeeze().cpu().numpy())
+                swa_val_labels.extend(labels.cpu().numpy())
+
+        swa_val_auc = roc_auc_score(swa_val_labels, swa_val_preds)
+        swa_val_logloss = log_loss(swa_val_labels, swa_val_preds)
+        swa_avg_val_loss = swa_val_loss / len(val_loader)
+
+        logging.info(f'SWA Model Performance:')
+        logging.info(f'  Val Loss: {swa_avg_val_loss:.4f}')
+        logging.info(f'  Val AUC: {swa_val_auc:.4f}')
+        logging.info(f'  Val LogLoss: {swa_val_logloss:.4f}')
+
+        # SWA 모델이 더 좋으면 저장
+        if swa_avg_val_loss < best_val_loss:
+            logging.info(f'SWA model outperforms best checkpoint! Saving SWA model...')
+            torch.save(swa_model.state_dict(), f'{save_dir}/models/swa_model.pth')
+            model = swa_model  # 테스트에 SWA 모델 사용
+            train_history['swa_val_loss'] = swa_avg_val_loss
+            train_history['swa_val_auc'] = swa_val_auc
+            train_history['swa_val_logloss'] = swa_val_logloss
+        else:
+            logging.info(f'Best checkpoint still better than SWA model.')
+            train_history['swa_val_loss'] = swa_avg_val_loss
+            train_history['swa_val_auc'] = swa_val_auc
+            train_history['swa_val_logloss'] = swa_val_logloss
     
     # Test evaluation
     test_results = evaluate_model(model, test_loader, device, f'{save_dir}/models/best_model_checkpoint.pth')

@@ -76,16 +76,16 @@ python train.py
   - [x] Model Checkpointing 시스템 (성능 기반 저장)
   - [x] Learning Rate Scheduling (CosineAnnealingWarmRestarts 적용)
   - [x] Mixed Precision Training (AMP 사용)
-  - [ ] Early Stopping with patience (validation loss 기반)
-  - [ ] Gradient Clipping (norm=1.0 추천)
-  - [ ] SWA (Stochastic Weight Averaging) - 마지막 epoch들 평균
+  - [x] Early Stopping with patience (validation loss 기반)
+  - [x] Gradient Clipping (norm=1.0 추천)
+  - [x] SWA (Stochastic Weight Averaging) - 마지막 epoch들 평균
 
 - [ ] **Regularization 강화**
   - [x] L2 Regularization (weight_decay=1e-5 적용됨)
   - [x] Dropout (0.1 적용됨)
-  - [ ] Label Smoothing (hard label을 soft label로)
+  - [x] Label Smoothing (hard label을 soft label로)
   - [ ] Embedding Dropout (sparse feature용)
-  - [ ] DropConnect (weight dropout)
+  - ~~DropConnect (weight dropout)~~ - 현재 regularization으로 충분, 과적합 심할 시 실험 예정
 
 - [ ] **Embedding 최적화**
   - [ ] Adaptive Embedding dimension: `min(50, int(vocab_size**0.25))`

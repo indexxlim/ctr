@@ -80,11 +80,11 @@ python train.py
   - [x] Gradient Clipping (norm=1.0 추천)
   - [x] SWA (Stochastic Weight Averaging) - 마지막 epoch들 평균
 
-- [ ] **Regularization 강화**
+- [x] **Regularization 강화**
   - [x] L2 Regularization (weight_decay=1e-5 적용됨)
   - [x] Dropout (0.1 적용됨)
   - [x] Label Smoothing (hard label을 soft label로)
-  - [ ] Embedding Dropout (sparse feature용)
+  - [x] Embedding Dropout (sparse feature용)
   - ~~DropConnect (weight dropout)~~ - 현재 regularization으로 충분, 과적합 심할 시 실험 예정
 
 - [ ] **Embedding 최적화**

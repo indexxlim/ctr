@@ -55,7 +55,7 @@ def prepare_data():
     print("Loading and preprocessing data...")
 
     # Load data
-    df = pd.read_parquet('/home/lim/project/data')
+    df = pd.read_parquet('/home/lim/project/data/train.parquet')
     #df = df.sample(n=50000, random_state=42)  # 5만 샘플로 빠른 테스트
 
     # Handle NaN values
@@ -85,21 +85,19 @@ def prepare_data():
         scaler = None
         print("No dense features found for normalization")
 
-    # Split data
-    train_df, test_df = train_test_split(df, test_size=0.2, random_state=42)
-    train_df, val_df = train_test_split(train_df, test_size=0.2, random_state=42)
+    # Split data (train/val only, test.parquet is for final submission)
+    train_df, val_df = train_test_split(df, test_size=0.1, random_state=42)
 
-    print(f"Train: {len(train_df)}, Val: {len(val_df)}, Test: {len(test_df)}")
+    print(f"Train: {len(train_df)}, Val: {len(val_df)}")
 
     # Create data directory if not exists
     data_dir = './data/processed'
     os.makedirs(data_dir, exist_ok=True)
 
     # Save datasets
-    print("Saving train/val/test datasets...")
+    print("Saving train/val datasets...")
     train_df.to_parquet(f'{data_dir}/train_data.parquet', index=False)
     val_df.to_parquet(f'{data_dir}/val_data.parquet', index=False)
-    test_df.to_parquet(f'{data_dir}/test_data.parquet', index=False)
 
     # Save preprocessors
     preprocessors = {
@@ -111,10 +109,10 @@ def prepare_data():
 
     print(f"Data saved to {data_dir}/")
     print(f"Preprocessors saved: label_encoders, scaler={'available' if scaler else 'none'}")
-    return train_df, val_df, test_df, label_encoders, scaler
+    return train_df, val_df, label_encoders, scaler
 
 def load_prepared_data():
-    """저장된 train/val/test 데이터와 전처리기 로드"""
+    """저장된 train/val 데이터와 전처리기 로드"""
     data_dir = './data/processed'
 
     if not os.path.exists(f'{data_dir}/train_data.parquet'):
@@ -124,7 +122,6 @@ def load_prepared_data():
     print("Loading prepared data...")
     train_df = pd.read_parquet(f'{data_dir}/train_data.parquet')
     val_df = pd.read_parquet(f'{data_dir}/val_data.parquet')
-    test_df = pd.read_parquet(f'{data_dir}/test_data.parquet')
 
     # Load preprocessors
     with open(f'{data_dir}/preprocessors.pkl', 'rb') as f:
@@ -133,10 +130,10 @@ def load_prepared_data():
     label_encoders = preprocessors['label_encoders']
     scaler = preprocessors['scaler']
 
-    print(f"Loaded - Train: {len(train_df)}, Val: {len(val_df)}, Test: {len(test_df)}")
+    print(f"Loaded - Train: {len(train_df)}, Val: {len(val_df)}")
     print(f"Preprocessors loaded: {len(label_encoders)} label encoders, scaler={'available' if scaler else 'none'}")
 
-    return train_df, val_df, test_df, label_encoders, scaler
+    return train_df, val_df, label_encoders, scaler
 
 def setup_logging_and_save_dir():
     """로깅 설정 및 저장 디렉토리 생성"""
@@ -304,8 +301,8 @@ def train_model(use_focal_loss=False, label_smoothing=0.0):
     logging.info(f"Loss configuration: Focal Loss={use_focal_loss}, Label Smoothing={label_smoothing}")
 
     # Load or prepare data
-    train_df, val_df, test_df, label_encoders, scaler = load_prepared_data()
-    logging.info(f"Data loaded - Train: {len(train_df)}, Val: {len(val_df)}, Test: {len(test_df)}")
+    train_df, val_df, label_encoders, scaler = load_prepared_data()
+    logging.info(f"Data loaded - Train: {len(train_df)}, Val: {len(val_df)}")
 
     # Create config and model
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -326,15 +323,12 @@ def train_model(use_focal_loss=False, label_smoothing=0.0):
     # Create datasets and dataloaders
     train_dataset = CTRDataset(train_df, config)
     val_dataset = CTRDataset(val_df, config)
-    test_dataset = CTRDataset(test_df, config)
 
     # 최적화된 DataLoader 설정
     train_loader = DataLoader(train_dataset, batch_size=4096, shuffle=True,
                              num_workers=4, pin_memory=True, persistent_workers=True)
     val_loader = DataLoader(val_dataset, batch_size=8192, shuffle=False,
                            num_workers=2, pin_memory=True, persistent_workers=True)
-    test_loader = DataLoader(test_dataset, batch_size=8192, shuffle=False,
-                            num_workers=2, pin_memory=True, persistent_workers=True)
 
     # Optimizer and scheduler (Warmup 포함된 CosineAnnealingWarmRestarts)
     optimizer = optim.Adam(model.parameters(), lr=0.003, weight_decay=1e-5)
@@ -565,8 +559,8 @@ def train_model(use_focal_loss=False, label_smoothing=0.0):
             train_history['swa_val_auc'] = swa_val_auc
             train_history['swa_val_logloss'] = swa_val_logloss
     
-    # Test evaluation
-    test_results = evaluate_model(model, test_loader, device, f'{save_dir}/models/best_model_checkpoint.pth')
+    # Validation evaluation (using val_loader for final metrics)
+    test_results = evaluate_model(model, val_loader, device, f'{save_dir}/models/best_model_checkpoint.pth')
 
     # Save all training artifacts
     final_save_dir = save_training_artifacts(save_dir, model, config, train_history, test_results)
@@ -602,20 +596,20 @@ def evaluate_saved_model(model_path, data_path=None):
 
     # 데이터 로드
     if data_path:
-        test_df = pd.read_parquet(data_path)
+        val_df = pd.read_parquet(data_path)
     else:
-        _, _, test_df, _, _ = load_prepared_data()
+        _, val_df, _, _ = load_prepared_data()
 
     # 모델 설정 및 로드
     config = ModelConfig()
     model = MultiTaskTransformer(config).to(device)
 
     # 데이터셋 생성
-    test_dataset = CTRDataset(test_df, config)
-    test_loader = DataLoader(test_dataset, batch_size=2048, shuffle=False)
+    val_dataset = CTRDataset(val_df, config)
+    val_loader = DataLoader(val_dataset, batch_size=2048, shuffle=False)
 
     # 평가 실행
-    results = evaluate_model(model, test_loader, device, model_path)
+    results = evaluate_model(model, val_loader, device, model_path)
 
     return results
 

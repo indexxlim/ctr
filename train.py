@@ -6,8 +6,9 @@ from torch.utils.data import Dataset, DataLoader
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score, log_loss
+from sklearn.metrics import roc_auc_score, log_loss, brier_score_loss
 from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.calibration import calibration_curve
 from tqdm import tqdm
 import pickle
 import os
@@ -54,7 +55,7 @@ def prepare_data():
     print("Loading and preprocessing data...")
 
     # Load data
-    df = pd.read_parquet('/home/klcube/lim/train/ctr/data/train.parquet')
+    df = pd.read_parquet('/home/lim/project/data')
     #df = df.sample(n=50000, random_state=42)  # 5만 샘플로 빠른 테스트
 
     # Handle NaN values
@@ -188,11 +189,35 @@ def evaluate_model(model, test_loader, device, model_path=None):
     # Test metrics
     test_ctr_auc = roc_auc_score(test_labels_ctr, test_preds_ctr)
     test_ctr_logloss = log_loss(test_labels_ctr, test_preds_ctr)
+    test_brier_score = brier_score_loss(test_labels_ctr, test_preds_ctr)
+
+    # Calibration metrics
+    # Expected Calibration Error (ECE)
+    prob_true, prob_pred = calibration_curve(test_labels_ctr, test_preds_ctr, n_bins=10, strategy='uniform')
+    ece = np.mean(np.abs(prob_true - prob_pred))
+
+    # Maximum Calibration Error (MCE)
+    mce = np.max(np.abs(prob_true - prob_pred))
+
+    # Mean absolute calibration error per bin
+    mean_predicted_prob = np.mean(test_preds_ctr)
+    mean_actual_prob = np.mean(test_labels_ctr)
+    calibration_gap = abs(mean_predicted_prob - mean_actual_prob)
 
     test_results = {
         'ctr_auc': test_ctr_auc,
         'ctr_logloss': test_ctr_logloss,
-        'num_test_samples': len(test_labels_ctr)
+        'brier_score': test_brier_score,
+        'ece': ece,
+        'mce': mce,
+        'calibration_gap': calibration_gap,
+        'mean_predicted_prob': mean_predicted_prob,
+        'mean_actual_prob': mean_actual_prob,
+        'num_test_samples': len(test_labels_ctr),
+        'calibration_curve': {
+            'prob_true': prob_true.tolist(),
+            'prob_pred': prob_pred.tolist()
+        }
     }
 
     # Logging
@@ -200,6 +225,12 @@ def evaluate_model(model, test_loader, device, model_path=None):
     logging.info("EVALUATION RESULTS:")
     logging.info(f"CTR AUC: {test_ctr_auc:.4f}")
     logging.info(f"CTR LogLoss: {test_ctr_logloss:.4f}")
+    logging.info(f"Brier Score: {test_brier_score:.4f}")
+    logging.info(f"Expected Calibration Error (ECE): {ece:.4f}")
+    logging.info(f"Maximum Calibration Error (MCE): {mce:.4f}")
+    logging.info(f"Calibration Gap: {calibration_gap:.4f}")
+    logging.info(f"Mean Predicted Prob: {mean_predicted_prob:.4f}")
+    logging.info(f"Mean Actual Prob: {mean_actual_prob:.4f}")
     logging.info(f"Test Samples: {len(test_labels_ctr)}")
     logging.info("="*50)
 

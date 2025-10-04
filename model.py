@@ -9,7 +9,8 @@ class EmbeddingTable(nn.Module):
     def __init__(self, vocab_size, embed_dim):
         super().__init__()
         self.embedding = nn.Embedding(vocab_size, embed_dim)
-        
+        self.embed_dim = embed_dim
+
     def forward(self, x):
         return self.embedding(x)
 
@@ -18,17 +19,19 @@ class MultiTaskTransformer(nn.Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
-        
-        # embedding tables for sparse features
+
+        # embedding tables for sparse features (Adaptive Embedding)
         self.embeddings = nn.ModuleDict()
         for feat, vocab_size in config.sparse_feats.items():
-            self.embeddings[feat] = EmbeddingTable(vocab_size, config.embed_dim)
-        
+            embed_dim = config.embed_dims.get(feat, config.embed_dim)  # Use adaptive dim if available
+            self.embeddings[feat] = EmbeddingTable(vocab_size, embed_dim)
+
         # dense encoder projection
         self.dense_proj = nn.Linear(len(config.dense_feats), config.d_model)
-        
+
         # shared MLP
-        total_embed_dim = len(config.sparse_feats) * config.embed_dim + config.d_model
+        # Calculate total embedding dimension (sum of all adaptive dimensions)
+        total_embed_dim = sum(self.embeddings[feat].embed_dim for feat in config.sparse_feats.keys()) + config.d_model
         self.shared_mlp = nn.Sequential(
             nn.Linear(total_embed_dim, config.hidden_dims[0]),
             nn.GELU(),
@@ -37,7 +40,7 @@ class MultiTaskTransformer(nn.Module):
             nn.GELU(),
             nn.Dropout(0.1)
         )
-        
+
         # task heads
         self.ctr_head = nn.Linear(config.hidden_dims[-1], 1)
 
@@ -67,7 +70,7 @@ class MultiTaskTransformer(nn.Module):
         return logits
 
 class ModelConfig:
-    def __init__(self):
+    def __init__(self, use_adaptive_embedding=True):
         self.sparse_feats = {
             'gender': 5,
             'age_group': 15,
@@ -83,7 +86,23 @@ class ModelConfig:
                           [f'feat_a_{i}' for i in range(1, 19)] + \
                           [f'history_a_{i}' for i in range(1, 8)] + \
                           [f'history_b_{i}' for i in range(1, 31)]
-        self.embed_dim = 16
+
+        self.use_adaptive_embedding = use_adaptive_embedding
+
+        if use_adaptive_embedding:
+            # Adaptive Embedding Dimensions (data-driven)
+            self.embed_dims = {
+                'gender': 8,           # vocab=2, very small
+                'age_group': 8,        # vocab=8, small
+                'inventory_id': 16,    # vocab=18, medium
+                'day_of_week': 8,      # vocab=7, small
+                'hour': 16             # vocab=24, medium
+            }
+        else:
+            # Fixed embedding dimension (baseline)
+            self.embed_dims = {}
+
+        self.embed_dim = 16  # default fallback
         self.d_model = 64
         self.hidden_dims = [128, 64]
 

@@ -87,8 +87,14 @@ python train.py
   - [x] Embedding Dropout (sparse feature용)
   - ~~DropConnect (weight dropout)~~ - 현재 regularization으로 충분, 과적합 심할 시 실험 예정
 
-- [ ] **Embedding 최적화**
-  - [ ] Adaptive Embedding dimension: `min(50, int(vocab_size**0.25))`
+- [x] **Embedding 최적화**
+  - [x] Adaptive Embedding dimension: 데이터 기반 vocab size별 차원 설정
+    - gender (vocab=2): 8차원
+    - age_group (vocab=8): 8차원
+    - inventory_id (vocab=18): 16차원
+    - day_of_week (vocab=7): 8차원
+    - hour (vocab=24): 16차원
+    - 14.4% 파라미터 감소 (944 → 808)
   - [ ] Hash Embedding for high cardinality features (>10K vocab)
   - [ ] Shared Embeddings for related features (user_id, session_id 등)
   - [ ] Embedding Regularization (L2 on embeddings)
@@ -114,8 +120,9 @@ python train.py
 
 ### 📊 Monitoring & Evaluation
 
-- [ ] **평가 지표 확장**
-  - [ ] Calibration metrics (Brier Score, ECE, MCE)
+- [x] **평가 지표 확장**
+  - [x] Calibration metrics (Brier Score, ECE, MCE, Calibration Gap)
+  - [x] Calibration Curve (예측 확률 vs 실제 확률, 10 bins)
   - [ ] GAUC (Group AUC) - user별 AUC 평균
   - [ ] NDCG@K - ranking quality
   - [ ] Business metrics (CTR, Revenue, ROAS, eCPM)

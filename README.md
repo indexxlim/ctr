@@ -42,6 +42,12 @@ python train.py --prepare-data
 
 # 일반 훈련 (기존 데이터 있으면 로드, 없으면 자동 생성)
 python train.py
+
+# RE-SORT 모델 훈련
+python train.py --model resort
+
+# Transformer 모델 훈련 (기본값)
+python train.py --model transformer
 ```
 
 전처리된 데이터는 `./data/processed/` 디렉토리에 저장됩니다:
@@ -49,6 +55,56 @@ python train.py
 - `val_data.parquet`: 검증 데이터 (정규화 완료)
 - `test_data.parquet`: 테스트 데이터 (정규화 완료)
 - `preprocessors.pkl`: LabelEncoders와 StandardScaler
+
+실험 결과는 모델 타입별로 저장됩니다:
+- `./experiments/transformer_YYYYMMDD_HHMMSS/`: Transformer 모델 실험
+- `./experiments/resort_YYYYMMDD_HHMMSS/`: RE-SORT 모델 실험
+
+## Available Models
+
+### 1. MultiTaskTransformer (기본 모델)
+- Transformer 기반 CTR 예측 모델
+- Adaptive embedding dimensions
+- Shared MLP with task-specific heads
+
+### 2. RE-SORT (Removing Spurious Correlation)
+**논문**: [RE-SORT: Removing Spurious Correlation in Multilevel Interaction for CTR Prediction](https://arxiv.org/abs/2309.14891)
+
+**주요 특징**:
+- **Multi-scale Retention (MSR)**: Transformer의 self-attention을 개선한 retention mechanism으로 다양한 레벨의 feature interaction 학습
+- **Dual Stream Architecture**: 2개의 병렬 MSR 스트림 (Deep & Shallow)으로 global/local 패턴 동시 포착
+- **Feature Selection Module**: Gating mechanism으로 spurious correlation 제거
+- **XPOS Positional Encoding**: Enhanced rotary position embedding
+- **Interaction Aggregation**: Chunk-based bilinear interaction으로 효율적인 feature fusion
+
+**아키텍처 구성**:
+```
+Input Features (Embeddings)
+    ↓
+Feature Selection (Gating)
+    ↓
+MSR Stream 1 (Deep) ← Retention Mechanism (γ decay)
+MSR Stream 2 (Shallow) ← Retention Mechanism (γ decay)
+    ↓
+Interaction Aggregation (Bilinear)
+    ↓
+CTR Prediction
+```
+
+**하이퍼파라미터**:
+- MSR layers: 2
+- MSR dimension: 32
+- Number of heads: 2
+- Embedding dimension: 16
+- Dropout: 0.1
+- Feature Selection hidden units: [64]
+
+**장점**:
+- Spurious correlation 제거로 일반화 성능 향상
+- Multi-scale feature interaction으로 복잡한 패턴 학습
+- Retention mechanism으로 long-range dependency 효과적 처리
+
+**파라미터 수**: ~34K (경량 모델)
 
 ## TODO List - CTR 모델 개선 사항
 
@@ -112,7 +168,13 @@ python train.py
   - [ ] PLE (Progressive Layered Extraction) - task separation 개선
   - [ ] Uncertainty-based task weighting (homoscedastic uncertainty)
 
-- [ ] **Advanced Architectures**
+- [x] **Advanced Architectures**
+  - [x] RE-SORT (Removing Spurious Correlation) - Multi-scale Retention with Feature Selection
+    - Multi-scale Retention (MSR) mechanism
+    - Dual stream architecture (Deep & Shallow)
+    - XPOS positional encoding
+    - Chunk-based interaction aggregation
+    - ~34K parameters (경량 모델)
   - [ ] FiBiNET - Bilinear feature interaction
   - [ ] DLRM (Deep Learning Recommendation Model) - Facebook 아키텍처
   - [ ] BST (Behavior Sequence Transformer) - Transformer for user sequences
@@ -155,6 +217,11 @@ python train.py
 
 ### 🔧 엔지니어링 개선
 
+- [x] **실험 관리**
+  - [x] 모델별 실험 디렉토리 자동 생성 (transformer_*, resort_*)
+  - [x] 성능 기반 모델 저장 시스템
+  - [ ] MLflow/Weights&Biases 연동
+
 - [ ] **데이터 파이프라인**
   - [ ] Feature store 연동 (Feast, Tecton)
   - [ ] Online feature serving (Redis, DynamoDB)
@@ -165,3 +232,10 @@ python train.py
   - [ ] Model versioning (A/B test 지원)
   - [ ] Batch prediction pipeline
   - [ ] Cold start 문제 해결 (default model)
+
+
+### 이렇게 했는데 lightbgm보다 낮음
+Tabular 데이터에 최적화 - CTR 데이터처럼 categorical + numerical feature가 섞인 테이블 데이터에 매우 강력함
+Feature interaction 자동 학습 - Tree 기반이라 feature 간 복잡한 상호작용을 자동으로 잡아냄
+적은 데이터 전처리 - Label encoding만으로 충분
+Overfitting 방지 - Built-in regularization이 잘 되어있음

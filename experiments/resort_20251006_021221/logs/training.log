@@ -1,0 +1,3 @@
+2025-10-06 02:12:21,340 - INFO - Starting CTR model training...
+2025-10-06 02:12:21,340 - INFO - Model type: resort
+2025-10-06 02:12:21,340 - INFO - Loss configuration: Focal Loss=False, Label Smoothing=0.0

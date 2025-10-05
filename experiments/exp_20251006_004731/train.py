@@ -19,7 +19,6 @@ import shutil
 import time
 
 from model import MultiTaskTransformer, ModelConfig, ctr_loss, focal_loss
-from resort_model import RESORT, ResortConfig
 
 def convert_to_json_serializable(obj):
     """numpy 타입을 Python 기본 타입으로 변환"""
@@ -151,10 +150,10 @@ def load_prepared_data():
 
     return train_df, val_df, label_encoders, scaler
 
-def setup_logging_and_save_dir(model_type='transformer'):
+def setup_logging_and_save_dir():
     """로깅 설정 및 저장 디렉토리 생성"""
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    save_dir = f"./experiments/{model_type}_{timestamp}"
+    save_dir = f"./experiments/exp_{timestamp}"
     os.makedirs(save_dir, exist_ok=True)
     os.makedirs(f"{save_dir}/logs", exist_ok=True)
     os.makedirs(f"{save_dir}/models", exist_ok=True)
@@ -310,11 +309,10 @@ def save_training_artifacts(save_dir, model, config, train_history, test_results
     logging.info(f"Performance-based model saved to: ./saved_models/model_{perf_suffix}.pth")
     return save_dir
 
-def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transformer'):
+def train_model(use_focal_loss=False, label_smoothing=0.0):
     # 실험 디렉토리 및 로깅 설정
-    save_dir = setup_logging_and_save_dir(model_type)
+    save_dir = setup_logging_and_save_dir()
     logging.info("Starting CTR model training...")
-    logging.info(f"Model type: {model_type}")
     logging.info(f"Loss configuration: Focal Loss={use_focal_loss}, Label Smoothing={label_smoothing}")
 
     # Load or prepare data
@@ -325,14 +323,8 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     logging.info(f"Using device: {device}")
 
-    if model_type == 'resort':
-        config = ResortConfig()
-        model = RESORT(config).to(device)
-        logging.info("Using RE-SORT model")
-    else:
-        config = ModelConfig()
-        model = MultiTaskTransformer(config).to(device)
-        logging.info("Using MultiTaskTransformer model")
+    config = ModelConfig()
+    model = MultiTaskTransformer(config).to(device)
 
     # 모델 컴파일 최적화 (PyTorch 2.0+)
     try:
@@ -603,8 +595,6 @@ if __name__ == "__main__":
                        help='Use Focal Loss instead of BCE')
     parser.add_argument('--label-smoothing', type=float, default=0.0,
                        help='Label smoothing factor (0.0 to 0.5)')
-    parser.add_argument('--model', type=str, default='transformer', choices=['transformer', 'resort'],
-                       help='Model type to train (transformer or resort)')
 
     args = parser.parse_args()
 
@@ -612,7 +602,7 @@ if __name__ == "__main__":
         print("Preparing data...")
         prepare_data()
 
-    model, save_dir = train_model(use_focal_loss=args.focal_loss, label_smoothing=args.label_smoothing, model_type=args.model)
+    model, save_dir = train_model(use_focal_loss=args.focal_loss, label_smoothing=args.label_smoothing)
     print(f"\n🎉 Training completed! All artifacts saved to: {save_dir}")
 
 def evaluate_saved_model(model_path, data_path=None):

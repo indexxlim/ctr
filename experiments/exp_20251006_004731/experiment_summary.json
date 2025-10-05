@@ -1,0 +1,10 @@
+{
+  "timestamp": "2025-10-06T01:53:01.865390",
+  "model_type": "MultiTaskTransformer",
+  "device": "cuda",
+  "final_test_auc": 0.7344776821787593,
+  "final_test_logloss": 0.08726292773179842,
+  "best_epoch": 5,
+  "best_val_loss": 0.08725376518173072,
+  "model_filename": "model_auc0.7345_logloss0.0873_epoch5_20251006_015301.pth"
+}

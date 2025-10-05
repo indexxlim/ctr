@@ -2,5 +2,6 @@ torch
 pandas
 numpy
 scikit-learn
-pyarrow
+pyarrow==18.0.0
 tqdm
+lightgbm

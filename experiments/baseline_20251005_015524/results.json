@@ -1,0 +1,13 @@
+{
+  "timestamp": "20251005_015524",
+  "model_type": "LightGBM",
+  "validation_auc": 0.7425299174902136,
+  "validation_logloss": 0.08655577991282476,
+  "training_time_seconds": 139.05084252357483,
+  "n_estimators": 500,
+  "learning_rate": 0.05,
+  "max_depth": 8,
+  "num_features": 118,
+  "train_samples": 9633761,
+  "val_samples": 1070418
+}

@@ -1,0 +1,127 @@
+2025-10-05 01:54:08,514 - INFO - Starting CTR model training...
+2025-10-05 01:54:08,514 - INFO - Loss configuration: Focal Loss=False, Label Smoothing=0.0
+2025-10-05 01:54:23,397 - INFO - Data loaded - Train: 9633761, Val: 1070418
+2025-10-05 01:54:23,549 - INFO - Using device: cuda
+2025-10-05 01:54:26,027 - INFO - Model compiled with torch.compile for faster training
+2025-10-05 01:54:26,027 - INFO - Model created with 32625 parameters
+2025-10-05 01:54:26,028 - INFO - Mixed Precision Training: Enabled
+2025-10-05 01:54:26,029 - INFO - SWA will start from epoch 15/20
+2025-10-05 01:54:26,029 - INFO - Starting training loop...
+2025-10-05 02:01:13,020 - INFO - Epoch 1/20:
+2025-10-05 02:01:13,020 - INFO -   Train Loss: 0.0897
+2025-10-05 02:01:13,020 - INFO -   Val Loss: 0.0888
+2025-10-05 02:01:13,020 - INFO -   Val AUC: 0.7227
+2025-10-05 02:01:13,020 - INFO -   Val LogLoss: 0.0888
+2025-10-05 02:01:13,020 - INFO -   Learning Rate: 0.003000
+2025-10-05 02:01:13,020 - INFO -   Epoch Time: 406.99s
+2025-10-05 02:01:13,020 - INFO -   ETA: 128.9 minutes (7733s)
+2025-10-05 02:01:13,024 - INFO -   New best model saved at epoch 1!
+2025-10-05 02:01:13,024 - INFO -   Checkpoint: checkpoint_epoch1_auc0.7227_logloss0.0888.pth
+2025-10-05 02:07:41,395 - INFO - Epoch 2/20:
+2025-10-05 02:07:41,395 - INFO -   Train Loss: 0.0876
+2025-10-05 02:07:41,395 - INFO -   Val Loss: 0.0879
+2025-10-05 02:07:41,395 - INFO -   Val AUC: 0.7282
+2025-10-05 02:07:41,395 - INFO -   Val LogLoss: 0.0879
+2025-10-05 02:07:41,395 - INFO -   Learning Rate: 0.002714
+2025-10-05 02:07:41,395 - INFO -   Epoch Time: 388.37s
+2025-10-05 02:07:41,395 - INFO -   ETA: 119.3 minutes (7158s)
+2025-10-05 02:07:41,397 - INFO -   New best model saved at epoch 2!
+2025-10-05 02:07:41,397 - INFO -   Checkpoint: checkpoint_epoch2_auc0.7282_logloss0.0879.pth
+2025-10-05 02:14:09,391 - INFO - Epoch 3/20:
+2025-10-05 02:14:09,391 - INFO -   Train Loss: 0.0873
+2025-10-05 02:14:09,391 - INFO -   Val Loss: 0.0879
+2025-10-05 02:14:09,391 - INFO -   Val AUC: 0.7296
+2025-10-05 02:14:09,391 - INFO -   Val LogLoss: 0.0879
+2025-10-05 02:14:09,391 - INFO -   Learning Rate: 0.001964
+2025-10-05 02:14:09,391 - INFO -   Epoch Time: 387.99s
+2025-10-05 02:14:09,391 - INFO -   ETA: 111.8 minutes (6706s)
+2025-10-05 02:14:09,393 - INFO -   New best model saved at epoch 3!
+2025-10-05 02:14:09,393 - INFO -   Checkpoint: checkpoint_epoch3_auc0.7296_logloss0.0879.pth
+2025-10-05 02:20:37,817 - INFO - Epoch 4/20:
+2025-10-05 02:20:37,817 - INFO -   Train Loss: 0.0869
+2025-10-05 02:20:37,817 - INFO -   Val Loss: 0.0875
+2025-10-05 02:20:37,817 - INFO -   Val AUC: 0.7316
+2025-10-05 02:20:37,817 - INFO -   Val LogLoss: 0.0875
+2025-10-05 02:20:37,817 - INFO -   Learning Rate: 0.001037
+2025-10-05 02:20:37,817 - INFO -   Epoch Time: 388.42s
+2025-10-05 02:20:37,817 - INFO -   ETA: 104.8 minutes (6287s)
+2025-10-05 02:20:37,819 - INFO -   New best model saved at epoch 4!
+2025-10-05 02:20:37,819 - INFO -   Checkpoint: checkpoint_epoch4_auc0.7316_logloss0.0875.pth
+2025-10-05 02:27:06,565 - INFO - Epoch 5/20:
+2025-10-05 02:27:06,565 - INFO -   Train Loss: 0.0866
+2025-10-05 02:27:06,565 - INFO -   Val Loss: 0.0872
+2025-10-05 02:27:06,565 - INFO -   Val AUC: 0.7354
+2025-10-05 02:27:06,565 - INFO -   Val LogLoss: 0.0872
+2025-10-05 02:27:06,565 - INFO -   Learning Rate: 0.000287
+2025-10-05 02:27:06,565 - INFO -   Epoch Time: 388.75s
+2025-10-05 02:27:06,565 - INFO -   ETA: 98.0 minutes (5882s)
+2025-10-05 02:27:06,566 - INFO -   New best model saved at epoch 5!
+2025-10-05 02:27:06,567 - INFO -   Checkpoint: checkpoint_epoch5_auc0.7354_logloss0.0872.pth
+2025-10-05 02:33:34,396 - INFO - Epoch 6/20:
+2025-10-05 02:33:34,397 - INFO -   Train Loss: 0.0874
+2025-10-05 02:33:34,397 - INFO -   Val Loss: 0.0879
+2025-10-05 02:33:34,397 - INFO -   Val AUC: 0.7296
+2025-10-05 02:33:34,397 - INFO -   Val LogLoss: 0.0879
+2025-10-05 02:33:34,397 - INFO -   Learning Rate: 0.003000
+2025-10-05 02:33:34,397 - INFO -   Epoch Time: 387.83s
+2025-10-05 02:33:34,397 - INFO -   ETA: 91.3 minutes (5480s)
+2025-10-05 02:33:34,397 - INFO -   No improvement. Patience: 1/5
+2025-10-05 02:40:03,203 - INFO - Epoch 7/20:
+2025-10-05 02:40:03,204 - INFO -   Train Loss: 0.0873
+2025-10-05 02:40:03,204 - INFO -   Val Loss: 0.0879
+2025-10-05 02:40:03,204 - INFO -   Val AUC: 0.7292
+2025-10-05 02:40:03,204 - INFO -   Val LogLoss: 0.0879
+2025-10-05 02:40:03,204 - INFO -   Learning Rate: 0.002927
+2025-10-05 02:40:03,204 - INFO -   Epoch Time: 388.81s
+2025-10-05 02:40:03,204 - INFO -   ETA: 84.7 minutes (5083s)
+2025-10-05 02:40:03,204 - INFO -   No improvement. Patience: 2/5
+2025-10-05 02:46:31,371 - INFO - Epoch 8/20:
+2025-10-05 02:46:31,371 - INFO -   Train Loss: 0.0872
+2025-10-05 02:46:31,371 - INFO -   Val Loss: 0.0880
+2025-10-05 02:46:31,371 - INFO -   Val AUC: 0.7268
+2025-10-05 02:46:31,371 - INFO -   Val LogLoss: 0.0880
+2025-10-05 02:46:31,371 - INFO -   Learning Rate: 0.002714
+2025-10-05 02:46:31,371 - INFO -   Epoch Time: 388.17s
+2025-10-05 02:46:31,371 - INFO -   ETA: 78.1 minutes (4688s)
+2025-10-05 02:46:31,371 - INFO -   No improvement. Patience: 3/5
+2025-10-05 02:52:59,352 - INFO - Epoch 9/20:
+2025-10-05 02:52:59,352 - INFO -   Train Loss: 0.0871
+2025-10-05 02:52:59,352 - INFO -   Val Loss: 0.0876
+2025-10-05 02:52:59,352 - INFO -   Val AUC: 0.7304
+2025-10-05 02:52:59,352 - INFO -   Val LogLoss: 0.0876
+2025-10-05 02:52:59,352 - INFO -   Learning Rate: 0.002382
+2025-10-05 02:52:59,352 - INFO -   Epoch Time: 387.98s
+2025-10-05 02:52:59,352 - INFO -   ETA: 71.6 minutes (4294s)
+2025-10-05 02:52:59,352 - INFO -   No improvement. Patience: 4/5
+2025-10-05 02:59:27,680 - INFO - Epoch 10/20:
+2025-10-05 02:59:27,680 - INFO -   Train Loss: 0.0870
+2025-10-05 02:59:27,680 - INFO -   Val Loss: 0.0876
+2025-10-05 02:59:27,680 - INFO -   Val AUC: 0.7327
+2025-10-05 02:59:27,680 - INFO -   Val LogLoss: 0.0876
+2025-10-05 02:59:27,680 - INFO -   Learning Rate: 0.001964
+2025-10-05 02:59:27,680 - INFO -   Epoch Time: 388.33s
+2025-10-05 02:59:27,680 - INFO -   ETA: 65.0 minutes (3902s)
+2025-10-05 02:59:27,680 - INFO -   No improvement. Patience: 5/5
+2025-10-05 02:59:27,680 - INFO - Early stopping triggered after 10 epochs!
+2025-10-05 02:59:27,680 - INFO - Best validation loss: 0.0872 at epoch 5
+2025-10-05 02:59:27,680 - INFO - Updating SWA BatchNorm statistics...
+2025-10-05 02:59:27,680 - INFO - Evaluating SWA model on validation set...
+2025-10-05 03:00:19,246 - INFO - SWA Model Performance:
+2025-10-05 03:00:19,246 - INFO -   Val Loss: 0.6784
+2025-10-05 03:00:19,246 - INFO -   Val AUC: 0.4439
+2025-10-05 03:00:19,246 - INFO -   Val LogLoss: 0.6784
+2025-10-05 03:00:19,246 - INFO - Best checkpoint still better than SWA model.
+2025-10-05 03:00:19,246 - INFO - Starting model evaluation...
+2025-10-05 03:00:19,246 - INFO - Loading model from: ./experiments/exp_20251005_015408/models/best_model_checkpoint.pth
+2025-10-05 03:01:10,935 - INFO - ==================================================
+2025-10-05 03:01:10,935 - INFO - EVALUATION RESULTS:
+2025-10-05 03:01:10,935 - INFO - CTR AUC: 0.7354
+2025-10-05 03:01:10,935 - INFO - CTR LogLoss: 0.0872
+2025-10-05 03:01:10,935 - INFO - Brier Score: 0.0184
+2025-10-05 03:01:10,935 - INFO - Expected Calibration Error (ECE): 0.1374
+2025-10-05 03:01:10,935 - INFO - Maximum Calibration Error (MCE): 0.3179
+2025-10-05 03:01:10,935 - INFO - Calibration Gap: 0.0005
+2025-10-05 03:01:10,935 - INFO - Mean Predicted Prob: 0.0188
+2025-10-05 03:01:10,935 - INFO - Mean Actual Prob: 0.0193
+2025-10-05 03:01:10,935 - INFO - Test Samples: 1070418
+2025-10-05 03:01:10,935 - INFO - ==================================================

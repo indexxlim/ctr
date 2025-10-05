@@ -20,6 +20,21 @@ import time
 
 from model import MultiTaskTransformer, ModelConfig, ctr_loss, focal_loss
 
+def convert_to_json_serializable(obj):
+    """numpy 타입을 Python 기본 타입으로 변환"""
+    if isinstance(obj, dict):
+        return {k: convert_to_json_serializable(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [convert_to_json_serializable(v) for v in obj]
+    elif isinstance(obj, np.integer):
+        return int(obj)
+    elif isinstance(obj, np.floating):
+        return float(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    else:
+        return obj
+
 class CTRDataset(Dataset):
     def __init__(self, df, config):
         self.df = df
@@ -269,11 +284,11 @@ def save_training_artifacts(save_dir, model, config, train_history, test_results
 
     # 5. 학습 히스토리 저장
     with open(f"{save_dir}/training_history.json", 'w') as f:
-        json.dump(train_history, f, indent=2)
+        json.dump(convert_to_json_serializable(train_history), f, indent=2)
 
     # 6. 테스트 결과 저장
     with open(f"{save_dir}/test_results.json", 'w') as f:
-        json.dump(test_results, f, indent=2)
+        json.dump(convert_to_json_serializable(test_results), f, indent=2)
 
     # 7. 요약 정보 저장
     summary = {
@@ -335,9 +350,13 @@ def train_model(use_focal_loss=False, label_smoothing=0.0):
     scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=1e-6)
 
     # Mixed Precision Training 설정
-    scaler = torch.cuda.amp.GradScaler() if device.type == 'cuda' else None
+    scaler = torch.amp.GradScaler() if device.type == 'cuda' else None
     use_amp = device.type == 'cuda'
     logging.info(f"Mixed Precision Training: {'Enabled' if use_amp else 'Disabled'}")
+
+    # Training configuration
+    epochs = 20
+    best_val_loss = float('inf')
 
     # SWA (Stochastic Weight Averaging) 설정
     swa_model = AveragedModel(model)
@@ -355,10 +374,6 @@ def train_model(use_focal_loss=False, label_smoothing=0.0):
         'best_epoch': 0,
         'best_val_loss': float('inf')
     }
-
-    # Training loop
-    epochs = 20
-    best_val_loss = float('inf')
 
     # Early Stopping parameters
     patience = 5
@@ -384,7 +399,7 @@ def train_model(use_focal_loss=False, label_smoothing=0.0):
 
             # Mixed Precision Forward pass
             if use_amp:
-                with torch.cuda.amp.autocast():
+                with torch.amp.autocast(device_type='cuda'):
                     preds = model(batch_input)
                     if use_focal_loss:
                         loss = focal_loss(preds, labels)

@@ -1,0 +1,11 @@
+2025-10-06 13:13:48,232 - INFO - Starting CTR model training...
+2025-10-06 13:13:48,232 - INFO - Model type: resort
+2025-10-06 13:13:48,232 - INFO - Loss configuration: Focal Loss=False, Label Smoothing=0.0
+2025-10-06 13:13:55,141 - INFO - Data loaded - Train: 9633761, Val: 1070418
+2025-10-06 13:13:55,287 - INFO - Using device: cuda
+2025-10-06 13:13:55,404 - INFO - Using RE-SORT model
+2025-10-06 13:13:56,341 - INFO - Model compiled with torch.compile for faster training
+2025-10-06 13:13:56,341 - INFO - Model created with 34078 parameters
+2025-10-06 13:13:56,341 - INFO - Mixed Precision Training: Enabled
+2025-10-06 13:13:56,344 - INFO - SWA will start from epoch 15/20
+2025-10-06 13:13:56,344 - INFO - Starting training loop...

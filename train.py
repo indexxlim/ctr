@@ -263,7 +263,6 @@ def save_training_artifacts(save_dir, model, config, train_history, test_results
 
     # 1. 실험 폴더 내 모델 저장 (.pth)
     torch.save(model.state_dict(), f"{save_dir}/models/best_model_{perf_suffix}.pth")
-    torch.save(model, f"{save_dir}/models/full_model_{perf_suffix}.pth")
 
     # 2. model.py 파일 복사
     if os.path.exists("model.py"):
@@ -358,7 +357,7 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
     scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=1e-6)
 
     # Mixed Precision Training 설정
-    scaler = torch.amp.GradScaler() if device.type == 'cuda' else None
+    grad_scaler = torch.amp.GradScaler() if device.type == 'cuda' else None
     use_amp = device.type == 'cuda'
     logging.info(f"Mixed Precision Training: {'Enabled' if use_amp else 'Disabled'}")
 
@@ -414,12 +413,12 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
                     else:
                         loss = ctr_loss(preds, labels, label_smoothing=label_smoothing)
                 # Backward pass with scaling
-                scaler.scale(loss).backward()
+                grad_scaler.scale(loss).backward()
                 # Gradient Clipping
-                scaler.unscale_(optimizer)
+                grad_scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
-                scaler.step(optimizer)
-                scaler.update()
+                grad_scaler.step(optimizer)
+                grad_scaler.update()
             else:
                 # Standard forward pass
                 preds = model(batch_input)
@@ -593,28 +592,6 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
 
     return model, final_save_dir
 
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser(description='CTR Model Training')
-    parser.add_argument('--prepare-data', action='store_true',
-                       help='Force data preparation even if processed data exists')
-    parser.add_argument('--focal-loss', action='store_true',
-                       help='Use Focal Loss instead of BCE')
-    parser.add_argument('--label-smoothing', type=float, default=0.0,
-                       help='Label smoothing factor (0.0 to 0.5)')
-    parser.add_argument('--model', type=str, default='transformer', choices=['transformer', 'resort'],
-                       help='Model type to train (transformer or resort)')
-
-    args = parser.parse_args()
-
-    if args.prepare_data:
-        print("Preparing data...")
-        prepare_data()
-
-    model, save_dir = train_model(use_focal_loss=args.focal_loss, label_smoothing=args.label_smoothing, model_type=args.model)
-    print(f"\n🎉 Training completed! All artifacts saved to: {save_dir}")
-
 def evaluate_saved_model(model_path, data_path=None):
     """저장된 모델을 평가하는 독립 함수"""
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -652,6 +629,8 @@ if __name__ == "__main__":
                        help='Use Focal Loss instead of BCE')
     parser.add_argument('--label-smoothing', type=float, default=0.0,
                        help='Label smoothing factor (0.0 to 0.5)')
+    parser.add_argument('--model', type=str, default='transformer', choices=['transformer', 'resort'],
+                       help='Model type to train (transformer or resort)')
 
     args = parser.parse_args()
 
@@ -664,5 +643,5 @@ if __name__ == "__main__":
             print("Preparing data...")
             prepare_data()
 
-        model, save_dir = train_model(use_focal_loss=args.focal_loss, label_smoothing=args.label_smoothing)
+        model, save_dir = train_model(use_focal_loss=args.focal_loss, label_smoothing=args.label_smoothing, model_type=args.model)
         print(f"\n🎉 Training completed! All artifacts saved to: {save_dir}")

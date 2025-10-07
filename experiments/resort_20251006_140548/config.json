@@ -1,0 +1,14 @@
+{
+  "sparse_feats": {
+    "gender": 5,
+    "age_group": 15,
+    "inventory_id": 50,
+    "day_of_week": 10,
+    "hour": 30
+  },
+  "dense_feats": [],
+  "embed_dim": 16,
+  "msr_layers": 2,
+  "msr_dim": 32,
+  "num_heads": 2
+}

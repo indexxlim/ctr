@@ -275,17 +275,10 @@ def save_training_artifacts(save_dir, model, config, train_history, test_results
     config_dict = {
         'sparse_feats': config.sparse_feats,
         'dense_feats': config.dense_feats,
-        'embed_dim': config.embed_dim
+        'embed_dim': config.embed_dim,
+        'd_model': config.d_model,
+        'hidden_dims': config.hidden_dims
     }
-    # Add model-specific config attributes
-    if hasattr(config, 'd_model'):
-        config_dict['d_model'] = config.d_model
-    if hasattr(config, 'hidden_dims'):
-        config_dict['hidden_dims'] = config.hidden_dims
-    if hasattr(config, 'msr_layers'):
-        config_dict['msr_layers'] = config.msr_layers
-        config_dict['msr_dim'] = config.msr_dim
-        config_dict['num_heads'] = config.num_heads
     with open(f"{save_dir}/config.json", 'w') as f:
         json.dump(config_dict, f, indent=2)
 

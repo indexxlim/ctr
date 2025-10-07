@@ -69,42 +69,8 @@ class MultiTaskTransformer(nn.Module):
 
         return logits
 
-class ModelConfig:
-    def __init__(self, use_adaptive_embedding=True):
-        self.sparse_feats = {
-            'gender': 5,
-            'age_group': 15,
-            'inventory_id': 50,
-            'day_of_week': 10,
-            'hour': 30
-        }
-        self.dense_feats = ['seq'] + [f'l_feat_{i}' for i in range(1, 28)] + \
-                          [f'feat_e_{i}' for i in range(1, 11)] + \
-                          [f'feat_d_{i}' for i in range(1, 7)] + \
-                          [f'feat_c_{i}' for i in range(1, 9)] + \
-                          [f'feat_b_{i}' for i in range(1, 7)] + \
-                          [f'feat_a_{i}' for i in range(1, 19)] + \
-                          [f'history_a_{i}' for i in range(1, 8)] + \
-                          [f'history_b_{i}' for i in range(1, 31)]
-
-        self.use_adaptive_embedding = use_adaptive_embedding
-
-        if use_adaptive_embedding:
-            # Adaptive Embedding Dimensions (data-driven)
-            self.embed_dims = {
-                'gender': 8,           # vocab=2, very small
-                'age_group': 8,        # vocab=8, small
-                'inventory_id': 16,    # vocab=18, medium
-                'day_of_week': 8,      # vocab=7, small
-                'hour': 16             # vocab=24, medium
-            }
-        else:
-            # Fixed embedding dimension (baseline)
-            self.embed_dims = {}
-
-        self.embed_dim = 16  # default fallback
-        self.d_model = 64
-        self.hidden_dims = [128, 64]
+# Import from centralized config
+from config import ModelConfig
 
 # Loss function for CTR prediction
 def ctr_loss(logits, labels, label_smoothing=0.0):

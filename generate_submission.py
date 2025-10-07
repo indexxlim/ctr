@@ -7,6 +7,7 @@ import pickle
 import json
 import sys
 import os
+from sklearn.preprocessing import LabelEncoder
 
 # Add experiment directory to path to import model
 EXP_DIR = '/home/lim/project/ctr/experiments/exp_20250923_094110'
@@ -86,7 +87,6 @@ def generate_test_predictions(model_path, test_data_path, output_path, exp_dir):
     print(f"Categorical columns found: {categorical_cols}")
 
     # Encode categorical features if encoders exist, otherwise do label encoding
-    from sklearn.preprocessing import LabelEncoder
 
     for col in categorical_cols:
         if col in label_encoders:

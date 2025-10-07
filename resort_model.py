@@ -273,30 +273,5 @@ class MultiHeadSelfMSR(nn.Module):
         return output
 
 
-class ResortConfig:
-    """Configuration for RESORT model"""
-    def __init__(self):
-        self.sparse_feats = {
-            'gender': 5,
-            'age_group': 15,
-            'inventory_id': 50,
-            'day_of_week': 10,
-            'hour': 30
-        }
-        self.dense_feats = []  # Add dense feature names if needed
-
-        # Embedding dimensions
-        self.embed_dim = 16
-        self.embed_dims = {}  # Adaptive embedding dims per feature
-
-        # MSR parameters
-        self.msr_layers = 2
-        self.msr_dim = 32
-        self.num_heads = 2
-        self.dropout = 0.1
-        self.use_scale = False
-        self.group_norm = True
-
-        # Feature selection
-        self.use_fs = True
-        self.fs_hidden_units = [64]
+# Import from centralized config
+from config import ResortConfig

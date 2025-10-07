@@ -17,9 +17,11 @@ import logging
 from datetime import datetime
 import shutil
 import time
+import sys
 
-from model import MultiTaskTransformer, ModelConfig, ctr_loss, focal_loss
-from resort_model import RESORT, ResortConfig
+from model import MultiTaskTransformer, ctr_loss, focal_loss
+from resort_model import RESORT
+from config import ModelConfig, ResortConfig, TrainingConfig
 
 def convert_to_json_serializable(obj):
     """numpy 타입을 Python 기본 타입으로 변환"""
@@ -249,7 +251,7 @@ def evaluate_model(model, test_loader, device, model_path=None):
 
     return test_results
 
-def save_training_artifacts(save_dir, model, config, train_history, test_results):
+def save_training_artifacts(save_dir, model, config, train_history, test_results, model_type='transformer'):
     """학습 관련 모든 파일들을 저장"""
 
     # 성능 지표를 포함한 파일명 생성
@@ -264,9 +266,15 @@ def save_training_artifacts(save_dir, model, config, train_history, test_results
     # 1. 실험 폴더 내 모델 저장 (.pth)
     torch.save(model.state_dict(), f"{save_dir}/models/best_model_{perf_suffix}.pth")
 
-    # 2. model.py 파일 복사
-    if os.path.exists("model.py"):
-        shutil.copy2("model.py", f"{save_dir}/model.py")
+    # 2. model.py or resort_model.py 파일 복사
+    if model_type == 'resort':
+        if os.path.exists("resort_model.py"):
+            shutil.copy2("resort_model.py", f"{save_dir}/resort_model.py")
+        if os.path.exists("xpos_relative_position.py"):
+            shutil.copy2("xpos_relative_position.py", f"{save_dir}/xpos_relative_position.py")
+    else:
+        if os.path.exists("model.py"):
+            shutil.copy2("model.py", f"{save_dir}/model.py")
 
     # 3. train.py 파일 복사
     shutil.copy2(__file__, f"{save_dir}/train.py")
@@ -300,7 +308,7 @@ def save_training_artifacts(save_dir, model, config, train_history, test_results
     # 7. 요약 정보 저장
     summary = {
         'timestamp': datetime.now().isoformat(),
-        'model_type': 'MultiTaskTransformer',
+        'model_type': model_type,
         'device': str(torch.device('cuda' if torch.cuda.is_available() else 'cpu')),
         'final_test_auc': test_results['ctr_auc'],
         'final_test_logloss': test_results['ctr_logloss'],
@@ -319,6 +327,13 @@ def save_training_artifacts(save_dir, model, config, train_history, test_results
 def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transformer'):
     # 실험 디렉토리 및 로깅 설정
     save_dir = setup_logging_and_save_dir(model_type)
+
+    # Python 실행 명령어 로그 기록
+    command_line = "python " + " ".join(sys.argv)
+    logging.info("="*50)
+    logging.info(f"Command: {command_line}")
+    logging.info("="*50)
+
     logging.info("Starting CTR model training...")
     logging.info(f"Model type: {model_type}")
     logging.info(f"Loss configuration: Focal Loss={use_focal_loss}, Label Smoothing={label_smoothing}")
@@ -354,14 +369,17 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
     val_dataset = CTRDataset(val_df, config)
 
     # 최적화된 DataLoader 설정
-    train_loader = DataLoader(train_dataset, batch_size=20480, shuffle=True,
-                             num_workers=4, pin_memory=True, persistent_workers=True)
-    val_loader = DataLoader(val_dataset, batch_size=8192, shuffle=False,
-                           num_workers=2, pin_memory=True, persistent_workers=True)
+    train_config = TrainingConfig()
+    train_loader = DataLoader(train_dataset, batch_size=train_config.TRAIN_BATCH_SIZE, shuffle=True,
+                             num_workers=train_config.NUM_WORKERS, pin_memory=True, persistent_workers=True)
+    val_loader = DataLoader(val_dataset, batch_size=train_config.VAL_BATCH_SIZE, shuffle=False,
+                           num_workers=train_config.NUM_WORKERS // 2, pin_memory=True, persistent_workers=True)
 
     # Optimizer and scheduler (Warmup 포함된 CosineAnnealingWarmRestarts)
-    optimizer = optim.Adam(model.parameters(), lr=0.003, weight_decay=1e-5)
-    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=5, T_mult=2, eta_min=1e-6)
+    optimizer = optim.Adam(model.parameters(), lr=train_config.LEARNING_RATE, weight_decay=train_config.WEIGHT_DECAY)
+    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer, T_0=train_config.T_0, T_mult=train_config.T_MULT, eta_min=train_config.ETA_MIN
+    )
 
     # Mixed Precision Training 설정
     grad_scaler = torch.amp.GradScaler() if device.type == 'cuda' else None
@@ -369,13 +387,13 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
     logging.info(f"Mixed Precision Training: {'Enabled' if use_amp else 'Disabled'}")
 
     # Training configuration
-    epochs = 20
+    epochs = train_config.EPOCHS
     best_val_loss = float('inf')
 
     # SWA (Stochastic Weight Averaging) 설정
     swa_model = AveragedModel(model)
-    swa_start = int(epochs * 0.7)  # 전체 epochs의 70%부터 SWA 시작
-    swa_scheduler = SWALR(optimizer, swa_lr=0.005)
+    swa_start = int(epochs * train_config.SWA_START_RATIO)
+    swa_scheduler = SWALR(optimizer, swa_lr=train_config.SWA_LR)
     logging.info(f"SWA will start from epoch {swa_start + 1}/{epochs}")
 
     # Training history
@@ -390,7 +408,7 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
     }
 
     # Early Stopping parameters
-    patience = 5
+    patience = train_config.PATIENCE
     patience_counter = 0
 
     # 전체 학습 시간 측정 시작
@@ -423,7 +441,7 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
                 grad_scaler.scale(loss).backward()
                 # Gradient Clipping
                 grad_scaler.unscale_(optimizer)
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=train_config.GRADIENT_CLIP_NORM)
                 grad_scaler.step(optimizer)
                 grad_scaler.update()
             else:
@@ -435,7 +453,7 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
                     loss = ctr_loss(preds, labels, label_smoothing=label_smoothing)
                 loss.backward()
                 # Gradient Clipping
-                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=train_config.GRADIENT_CLIP_NORM)
                 optimizer.step()
 
             train_loss += loss.item()
@@ -592,7 +610,7 @@ def train_model(use_focal_loss=False, label_smoothing=0.0, model_type='transform
     test_results = evaluate_model(model, val_loader, device, f'{save_dir}/models/best_model_checkpoint.pth')
 
     # Save all training artifacts
-    final_save_dir = save_training_artifacts(save_dir, model, config, train_history, test_results)
+    final_save_dir = save_training_artifacts(save_dir, model, config, train_history, test_results, model_type)
 
     logging.info("Training completed successfully!")
     logging.info(f"All results saved to: {final_save_dir}")

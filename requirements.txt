@@ -5,3 +5,9 @@ scikit-learn
 pyarrow==18.0.0
 tqdm
 lightgbm
+nvtabular
+cudf-cu12
+cupy-cuda12x
+xgboost
+dask
+

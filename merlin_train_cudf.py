@@ -138,7 +138,7 @@ def process_data_cudf():
     print("\n🔧 Processing categorical features...")
     for col in categorical:
         if col in gdf.columns:
-            gdf[col] = gdf[col].fillna(-1).astype('category').cat.codes.astype('float32')
+            gdf[col] = gdf[col].astype('category').cat.codes.astype('float32')
 
     # Process continuous features (fill missing)
     print("🔧 Processing continuous features...")
@@ -178,8 +178,8 @@ def process_test_data_cudf():
     gdf = cudf.read_parquet(TEST_PATH, columns=cols)
     print(f"   Loaded {len(gdf):,} rows")
 
-    # Keep ID column for submission (note: column name is 'ID' not 'id')
-    test_ids = gdf['ID'].to_pandas()
+    # Keep id column for submission
+    test_ids = gdf['id'].to_pandas()
     print_memory()
 
     # Define categorical and continuous columns
@@ -199,7 +199,7 @@ def process_test_data_cudf():
     print("\n🔧 Processing categorical features...")
     for col in categorical:
         if col in gdf.columns:
-            gdf[col] = gdf[col].fillna(-1).astype('category').cat.codes.astype('float32')
+            gdf[col] = gdf[col].astype('category').cat.codes.astype('float32')
 
     # Process continuous features (fill missing)
     print("🔧 Processing continuous features...")
@@ -207,8 +207,8 @@ def process_test_data_cudf():
         if col in gdf.columns:
             gdf[col] = gdf[col].fillna(0).astype('float32')
 
-    # Drop ID column for model input
-    gdf = gdf.drop('ID', axis=1)
+    # Drop id column for model input
+    gdf = gdf.drop('id', axis=1)
 
     elapsed = time.time() - start_time
     final_mem = print_memory()

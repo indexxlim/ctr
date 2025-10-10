@@ -1,0 +1,257 @@
+✅ Environment configured
+✅ All libraries imported successfully
+📋 Configuration:
+   Train: /home/lim/project/data/train.parquet
+   Test: /home/lim/project/data/test.parquet
+   Output: /home/lim/project/data/cudf_processed
+   Submission: submission_xgboost_cudf_20251010_040222.csv
+   Folds: 5
+   Skip CV: False
+✅ Metric functions defined
+
+======================================================================
+📂 STEP 1: Process Training Data
+======================================================================
+
+======================================================================
+🚀 cuDF Data Processing
+======================================================================
+💾 CPU: 35.3GB/62.4GB (56.6%)
+💾 GPU: 1.9GB/31.8GB
+
+📦 Loading data...
+   Total columns: 119
+   Using columns: 118 (excluded 'seq')
+   Loaded 10,704,179 rows
+💾 CPU: 35.7GB/62.4GB (57.1%)
+💾 GPU: 7.5GB/31.8GB
+
+📊 Feature types:
+   Categorical: 5 columns
+   Continuous: 112 columns
+
+🔧 Processing categorical features...
+🔧 Processing continuous features...
+💾 CPU: 35.8GB/62.4GB (57.4%)
+💾 GPU: 7.2GB/31.8GB
+
+✅ Processing complete!
+   Time: 1.4s
+   Memory increase: +0.8%
+
+======================================================================
+📂 STEP 2: Cross-Validation
+======================================================================
+
+======================================================================
+🔄 Stratified KFold Cross-Validation
+======================================================================
+💾 CPU: 35.8GB/62.4GB (57.4%)
+💾 GPU: 7.2GB/31.8GB
+
+📊 Preparing data for XGBoost...
+   Shape: (10704179, 117)
+   Features: 117
+   Samples: 10,704,179
+
+📊 Class distribution:
+   Positive ratio: 0.0191
+   Scale pos weight: 51.43
+🧹 GPU memory cleared
+
+🔄 Starting cross-validation...
+
+📍 Fold 1/5
+   Train: 8,563,343 | Val: 2,140,836
+   Training...
+[0]	val-logloss:0.67930
+[50]	val-logloss:0.58478
+[100]	val-logloss:0.57344
+[150]	val-logloss:0.56496
+[199]	val-logloss:0.55737
+   📊 Results:
+      Score: 0.353414
+      AP: 0.081542
+      WLL: 0.599266
+      Best iteration: 199
+   ⏱️ Time: 18.3s
+🧹 GPU memory cleared
+
+📍 Fold 2/5
+   Train: 8,563,343 | Val: 2,140,836
+   Training...
+[0]	val-logloss:0.67925
+[50]	val-logloss:0.58482
+[100]	val-logloss:0.57335
+[150]	val-logloss:0.56465
+[199]	val-logloss:0.55700
+   📊 Results:
+      Score: 0.352969
+      AP: 0.080761
+      WLL: 0.599546
+      Best iteration: 199
+   ⏱️ Time: 17.0s
+🧹 GPU memory cleared
+
+📍 Fold 3/5
+   Train: 8,563,343 | Val: 2,140,836
+   Training...
+[0]	val-logloss:0.67914
+[50]	val-logloss:0.58465
+[100]	val-logloss:0.57268
+[150]	val-logloss:0.56377
+[199]	val-logloss:0.55618
+   📊 Results:
+      Score: 0.352537
+      AP: 0.079933
+      WLL: 0.599641
+      Best iteration: 199
+   ⏱️ Time: 16.9s
+🧹 GPU memory cleared
+
+📍 Fold 4/5
+   Train: 8,563,343 | Val: 2,140,836
+   Training...
+[0]	val-logloss:0.67923
+[50]	val-logloss:0.58454
+[100]	val-logloss:0.57327
+[150]	val-logloss:0.56501
+[199]	val-logloss:0.55732
+   📊 Results:
+      Score: 0.353752
+      AP: 0.082149
+      WLL: 0.599095
+      Best iteration: 199
+   ⏱️ Time: 16.4s
+🧹 GPU memory cleared
+
+📍 Fold 5/5
+   Train: 8,563,344 | Val: 2,140,835
+   Training...
+[0]	val-logloss:0.67922
+[50]	val-logloss:0.58457
+[100]	val-logloss:0.57257
+[150]	val-logloss:0.56371
+[199]	val-logloss:0.55628
+   📊 Results:
+      Score: 0.353271
+      AP: 0.081344
+      WLL: 0.599495
+      Best iteration: 199
+   ⏱️ Time: 23.2s
+🧹 GPU memory cleared
+
+======================================================================
+📊 Final Cross-Validation Results
+======================================================================
+
+🏆 Competition Score: 0.353188 ± 0.000412
+📈 Average Precision: 0.081146 ± 0.000751
+📉 Weighted LogLoss: 0.599409 ± 0.000200
+
+All fold scores: ['0.353414', '0.352969', '0.352537', '0.353752', '0.353271']
+
+✅ CV Score: 0.353188 ± 0.000412
+
+======================================================================
+🚀 cuDF Data Processing
+======================================================================
+💾 CPU: 32.5GB/62.4GB (52.0%)
+💾 GPU: 7.3GB/31.8GB
+
+📦 Loading data...
+   Total columns: 119
+   Using columns: 118 (excluded 'seq')
+   Loaded 10,704,179 rows
+💾 CPU: 32.7GB/62.4GB (52.4%)
+💾 GPU: 12.4GB/31.8GB
+
+📊 Feature types:
+   Categorical: 5 columns
+   Continuous: 112 columns
+
+🔧 Processing categorical features...
+🔧 Processing continuous features...
+💾 CPU: 33.0GB/62.4GB (52.9%)
+💾 GPU: 12.1GB/31.8GB
+
+✅ Processing complete!
+   Time: 0.5s
+   Memory increase: +0.9%
+
+======================================================================
+📂 STEP 3: Process Test Data
+======================================================================
+
+======================================================================
+🚀 cuDF Test Data Processing
+======================================================================
+💾 CPU: 33.0GB/62.4GB (52.9%)
+💾 GPU: 7.3GB/31.8GB
+
+📦 Loading test data...
+   Total columns: 119
+   Using columns: 118
+   Loaded 1,527,298 rows
+💾 CPU: 34.1GB/62.4GB (54.7%)
+💾 GPU: 8.0GB/31.8GB
+
+🔧 Processing categorical features...
+🔧 Processing continuous features...
+💾 CPU: 34.1GB/62.4GB (54.6%)
+💾 GPU: 7.9GB/31.8GB
+
+✅ Test data processing complete!
+   Time: 0.7s
+   Memory increase: +1.7%
+
+======================================================================
+📂 STEP 4: Train Full Model & Generate Submission
+======================================================================
+
+======================================================================
+🎯 Training on Full Dataset & Predicting on Test
+======================================================================
+💾 CPU: 34.1GB/62.4GB (54.6%)
+💾 GPU: 7.9GB/31.8GB
+
+📊 Preparing training data...
+   Train shape: (10704179, 117)
+   Features: 117
+
+📊 Preparing test data...
+   Test shape: (1527298, 117)
+
+📊 Class distribution:
+   Positive ratio: 0.0191
+   Scale pos weight: 51.43
+🧹 GPU memory cleared
+
+🚀 Training on full dataset...
+   Training for 200 rounds...
+   ⏱️ Training time: 17.3s
+
+🔮 Predicting on test data...
+   ⏱️ Prediction time: 0.2s
+   Predictions: min=0.003043, max=0.989592, mean=0.359432
+
+💾 Creating submission file...
+   ✅ Saved to: submission_xgboost_cudf_20251010_040222.csv
+   Rows: 1,527,298
+🧹 GPU memory cleared
+
+🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
+COMPLETE!
+🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉🎉
+
+✅ Final CV Score: 0.353188 ± 0.000412
+✅ Submission saved to: submission_xgboost_cudf_20251010_040222.csv
+✅ Total predictions: 1,527,298
+✅ Full dataset processed
+✅ cuDF-based preprocessing (CUDA 12 compatible)
+======================================================================
+🧹 GPU memory cleared
+
+🧹 Final cleanup complete
+💾 CPU: 34.1GB/62.4GB (54.6%)
+💾 GPU: 8.1GB/31.8GB

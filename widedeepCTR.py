@@ -208,6 +208,22 @@ model = train_model(
     device=device
 )
 
+# Save model after training
+print("모델 저장 중...")
+model_save_path = './widedeep_model.pth'
+cat_cardinalities = [len(cat_encoders[c].classes_) for c in cat_cols]
+torch.save({
+    'model_state_dict': model.state_dict(),
+    'num_features': len(num_cols),
+    'cat_cardinalities': cat_cardinalities,
+    'emb_dim': 16,
+    'lstm_hidden': 64,
+    'hidden_units': [512, 256, 128],
+    'dropout': [0.1, 0.2, 0.3],
+    'config': CFG
+}, model_save_path)
+print(f"모델 저장 완료: {model_save_path}")
+
 print("추론 시작")
 test_dataset = ClickDataset(test, num_cols, cat_cols, seq_col, has_target=False)
 test_loader = DataLoader(test_dataset, batch_size=CFG['BATCH_SIZE'], shuffle=False,
@@ -221,7 +237,7 @@ with torch.no_grad():
 test_preds = torch.cat(outs).numpy()
 print("추론 완료")
 
-submit = pd.read_csv('./data/sample_submission.csv')
+submit = pd.read_csv('../data/sample_submission.csv')
 submit['clicked'] = test_preds
 submit.to_csv('./test.csv', index=False)
 print("제출 파일 저장 완료")

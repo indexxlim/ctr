@@ -1,0 +1,16 @@
+### Tiny data for tests only
+tiny_h5:
+    data_root: ../../../data/
+    data_format: h5
+    train_data: ../../../data/tiny_h5/train.h5
+    valid_data: ../../../data/tiny_h5/valid.h5
+    test_data: ../../../data/tiny_h5/test.h5
+
+
+### Parquet data
+train_parquet:
+    data_root: ../../data/
+    data_format: parquet
+    train_data: ../../data/train.parquet
+    valid_data: ../../data/valid.parquet
+    test_data: ../../data/test.parquet

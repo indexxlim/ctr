@@ -1,0 +1,27 @@
+========================================
+Configuration:
+  Model: xDeepFM
+  GPU ID: 0 (GPU mode)
+  GPU Memory Threshold: 10%
+  Max Wait Time: 60s (1 minutes)
+  Working Directory: /home/lim/project/RE-SORT/SOTAS/xDeepFM
+  Log File: /home/lim/project/RE-SORT/SOTAS/results/xDeepFM_20251010_155729.log
+========================================
+
+Checking GPU 0 availability...
+GPU 0 Status:
+  Memory: 474MB / 32607MB (1%)
+  Utilization: 11%
+  Status: Available ✓
+GPU 0 is available. Starting training...
+
+
+======================================
+✓ xDeepFM completed successfully in 1s
+======================================
+
+Results:
+--------
+
+Summary saved to: /home/lim/project/RE-SORT/SOTAS/results/xDeepFM_20251010_155729_summary.txt
+Full log saved to: /home/lim/project/RE-SORT/SOTAS/results/xDeepFM_20251010_155729.log
